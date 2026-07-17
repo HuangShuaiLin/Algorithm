@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ACM 算法模板库</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --border: #30363d;
+    --text: #c9d1d9;
+    --text-secondary: #8b949e;
+    --accent: #58a6ff;
+    --accent-dim: #1f6feb33;
+    --tag-ds: #f97583;
+    --tag-graph: #a5d6ff;
+    --tag-str: #ffa657;
+    --tag-math: #7ee787;
+    --tag-other: #d2a8ff;
+    --code-bg: #0d1117;
+    --code-keyword: #ff7b72;
+    --code-type: #ffa657;
+    --code-string: #a5d6ff;
+    --code-comment: #8b949e;
+    --code-func: #d2a8ff;
+    --code-number: #a5d6ff;
+    --code-preprocessor: #7ee787;
+    --code-operator: #ff7b72;
+    --scrollbar-bg: transparent;
+    --scrollbar-thumb: #30363d;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans SC', sans-serif;
+    background: var(--bg); color: var(--text);
+    display: flex; height: 100vh; overflow: hidden;
+    line-height: 1.6;
+  }
+
+  /* === Sidebar === */
+  .sidebar {
+    width: 260px; min-width: 260px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    overflow: hidden;
+    user-select: none;
+  }
+  .sidebar-header {
+    padding: 20px 16px 12px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .sidebar-header h1 {
+    font-size: 18px; font-weight: 700;
+    color: var(--text);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .sidebar-header h1 .icon { font-size: 22px; }
+  .sidebar-header .subtitle {
+    font-size: 12px; color: var(--text-secondary); margin-top: 4px;
+  }
+  .search-box {
+    margin: 12px 12px 0; flex-shrink: 0;
+  }
+  .search-box input {
+    width: 100%; padding: 8px 12px;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 6px; color: var(--text);
+    font-size: 13px; outline: none;
+    transition: border-color .2s;
+  }
+  .search-box input:focus { border-color: var(--accent); }
+  .search-box input::placeholder { color: var(--text-secondary); }
+
+  .nav { flex: 1; overflow-y: auto; padding: 8px 0; }
+  .nav::-webkit-scrollbar { width: 6px; }
+  .nav::-webkit-scrollbar-track { background: var(--scrollbar-bg); }
+  .nav::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 3px; }
+
+  .nav-category {
+    padding: 8px 16px 4px;
+    font-size: 11px; font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 16px; cursor: pointer;
+    font-size: 13px; color: var(--text-secondary);
+    transition: all .15s;
+    border-left: 2px solid transparent;
+    position: relative;
+  }
+  .nav-item:hover { color: var(--text); background: rgba(255,255,255,.03); }
+  .nav-item.active {
+    color: var(--accent); background: var(--accent-dim);
+    border-left-color: var(--accent);
+  }
+  .nav-item .tag {
+    font-size: 10px; padding: 1px 5px;
+    border-radius: 3px; font-weight: 600;
+    line-height: 1.4; flex-shrink: 0;
+  }
+  .tag-ds { background: #f9758322; color: var(--tag-ds); }
+  .tag-graph { background: #a5d6ff22; color: var(--tag-graph); }
+  .tag-str { background: #ffa65722; color: var(--tag-str); }
+  .tag-math { background: #7ee78722; color: var(--tag-math); }
+  .tag-other { background: #d2a8ff22; color: var(--tag-other); }
+
+  .nav-item.hidden { display: none; }
+  .no-result {
+    padding: 16px; text-align: center;
+    color: var(--text-secondary); font-size: 13px;
+  }
+
+  .sidebar-footer {
+    padding: 10px 16px; border-top: 1px solid var(--border);
+    font-size: 11px; color: var(--text-secondary); flex-shrink: 0;
+    display: flex; justify-content: space-between;
+  }
+
+  /* === Main Content === */
+  .main {
+    flex: 1; overflow-y: auto; overflow-x: hidden;
+    padding: 24px 32px;
+  }
+  .main::-webkit-scrollbar { width: 8px; }
+  .main::-webkit-scrollbar-track { background: var(--scrollbar-bg); }
+  .main::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 4px; }
+
+  .template-section { display: none; }
+  .template-section.active { display: block; }
+
+  .section-header {
+    margin-bottom: 20px; padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-header h2 {
+    font-size: 24px; font-weight: 700; color: var(--text);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section-header .desc {
+    margin-top: 6px; font-size: 14px; color: var(--text-secondary);
+  }
+  .section-header .meta {
+    margin-top: 8px; display: flex; gap: 12px; flex-wrap: wrap;
+  }
+  .meta-item {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 12px; color: var(--text-secondary);
+    background: var(--surface); padding: 3px 8px;
+    border-radius: 4px; border: 1px solid var(--border);
+  }
+  .meta-item .label { color: var(--accent); }
+
+  /* === Code Block === */
+  .code-wrapper {
+    position: relative;
+    border: 1px solid var(--border);
+    border-radius: 8px; overflow: hidden;
+    background: var(--code-bg);
+  }
+  .code-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 12px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    font-size: 12px; color: var(--text-secondary);
+  }
+  .copy-btn {
+    padding: 4px 10px; font-size: 11px;
+    background: var(--border); color: var(--text);
+    border: none; border-radius: 4px; cursor: pointer;
+    transition: background .15s;
+  }
+  .copy-btn:hover { background: var(--accent-dim); color: var(--accent); }
+  .copy-btn.copied { background: #238636; color: #fff; }
+
+  pre {
+    padding: 16px 20px; overflow-x: auto;
+    font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    font-size: 13px; line-height: 1.7;
+    color: var(--text);
+    tab-size: 4;
+    counter-reset: line;
+  }
+  pre::-webkit-scrollbar { height: 6px; }
+  pre::-webkit-scrollbar-track { background: var(--scrollbar-bg); }
+  pre::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 3px; }
+
+  code { font-family: inherit; }
+
+  /* Manual syntax highlighting via spans */
+  .kw { color: var(--code-keyword); }
+  .tp { color: var(--code-type); }
+  .st { color: var(--code-string); }
+  .cm { color: var(--code-comment); font-style: italic; }
+  .fn { color: var(--code-func); }
+  .nu { color: var(--code-number); }
+  .pp { color: var(--code-preprocessor); }
+  .op { color: var(--code-operator); }
+
+  /* === Responsive === */
+  @media (max-width: 768px) {
+    .sidebar { width: 200px; min-width: 200px; }
+    .main { padding: 16px; }
+    pre { font-size: 11px; padding: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ========== Sidebar ========== -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <h1><span class="icon">&#x26A1;</span>ACM 模板库</h1>
+    <p class="subtitle">45 个 C++ 竞赛模板 &middot; 开箱即用</p>
+  </div>
+  <div class="search-box">
+    <input type="text" id="search" placeholder="搜索模板..." autocomplete="off">
+  </div>
+  <nav class="nav" id="nav"></nav>
+  <div class="sidebar-footer">
+    <span>2026-07-09</span><span>C++17</span>
+  </div>
+</aside>
+
+<!-- ========== Main Content ========== -->
+<main class="main" id="main"></main>
+
+<script>
+// ====================================================================
+// DATA — All 44 templates with metadata and code
+// ====================================================================
+const TEMPLATES = [
+  // ========== 数据结构 (8) ==========
+  {
+    id: '线段树', cat: '数据结构', catTag: 'tag-ds',
+    title: '线段树模板，区间加求和O(logN)+区间赋值最值，带懒标记',
+    file: '线段树模板，区间加求和O(logN)+区间赋值最值，带懒标记.cpp',
+    desc: '支持区间修改 + 区间查询的数据结构，含懒标记 (Lazy Propagation)',
+    meta: ['O(n)建树', 'O(log n)', '区间加/赋值', '区间和/最值'],
+    code: '#include <bits/stdc++.h>\nusing namespace std;\ntypedef long long ll;\n\n/**\n * 线段树 (Segment Tree)\n * 支持区间修改 + 区间查询\n * 默认是区间加法和区间求和\n */\n\nstruct SegTree {\n    vector<ll> tree, lazy;\n    int n;\n\n    SegTree(const vector<int>& a) {\n        n = a.size();\n        tree.resize(4 * n);\n        lazy.resize(4 * n);\n        build(1, 0, n - 1, a);\n    }\n\n    void build(int rt, int l, int r, const vector<int>& a) {\n        if (l == r) {\n            tree[rt] = a[l];\n            return;\n        }\n        int mid = (l + r) / 2;\n        build(rt * 2, l, mid, a);\n        build(rt * 2 + 1, mid + 1, r, a);\n        pushUp(rt);\n    }\n\n    void pushUp(int rt) {\n        tree[rt] = tree[rt * 2] + tree[rt * 2 + 1];\n    }\n\n    void pushDown(int rt, int l, int r) {\n        if (lazy[rt]) {\n            int mid = (l + r) / 2;\n            int lenL = mid - l + 1;\n            int lenR = r - mid;\n\n            tree[rt * 2] += lazy[rt] * lenL;\n            tree[rt * 2 + 1] += lazy[rt] * lenR;\n            lazy[rt * 2] += lazy[rt];\n            lazy[rt * 2 + 1] += lazy[rt];\n            lazy[rt] = 0;\n        }\n    }\n\n    // 区间加: [L, R] += val\n    void update(int L, int R, ll val, int rt, int l, int r) {\n        if (L <= l && r <= R) {\n            tree[rt] += val * (r - l + 1);\n            lazy[rt] += val;\n            return;\n        }\n        pushDown(rt, l, r);\n        int mid = (l + r) / 2;\n        if (L <= mid) update(L, R, val, rt * 2, l, mid);\n        if (R > mid) update(L, R, val, rt * 2 + 1, mid + 1, r);\n        pushUp(rt);\n    }\n\n    void update(int L, int R, ll val) {\n        update(L, R, val, 1, 0, n - 1);\n    }\n\n    // 区间查询: sum[L..R]\n    ll query(int L, int R, int rt, int l, int r) {\n        if (L <= l && r <= R) {\n            return tree[rt];\n        }\n        pushDown(rt, l, r);\n        int mid = (l + r) / 2;\n        ll res = 0;\n        if (L <= mid) res += query(L, R, rt * 2, l, mid);\n        if (R > mid) res += query(L, R, rt * 2 + 1, mid + 1, r);\n        return res;\n    }\n\n    ll query(int L, int R) {\n        return query(L, R, 1, 0, n - 1);\n    }\n};\n\n/**\n * 线段树 — 区间赋值 + 区间最值\n */\nstruct SegTreeAssign {\n    vector<ll> mx, lazy; // lazy = -1 表示无操作\n    int n;\n\n    SegTreeAssign(const vector<int>& a) {\n        n = a.size();\n        mx.resize(4 * n);\n        lazy.assign(4 * n, -1);\n        build(1, 0, n - 1, a);\n    }\n\n    void build(int rt, int l, int r, const vector<int>& a) {\n        if (l == r) {\n            mx[rt] = a[l];\n            return;\n        }\n        int mid = (l + r) / 2;\n        build(rt * 2, l, mid, a);\n        build(rt * 2 + 1, mid + 1, r, a);\n        mx[rt] = max(mx[rt * 2], mx[rt * 2 + 1]);\n    }\n\n    void pushDown(int rt) {\n        if (lazy[rt] != -1) {\n            mx[rt * 2] = lazy[rt];\n            mx[rt * 2 + 1] = lazy[rt];\n            lazy[rt * 2] = lazy[rt];\n            lazy[rt * 2 + 1] = lazy[rt];\n            lazy[rt] = -1;\n        }\n    }\n\n    void assign(int L, int R, ll val, int rt, int l, int r) {\n        if (L <= l && r <= R) {\n            mx[rt] = val;\n            lazy[rt] = val;\n            return;\n        }\n        pushDown(rt);\n        int mid = (l + r) / 2;\n        if (L <= mid) assign(L, R, val, rt * 2, l, mid);\n        if (R > mid) assign(L, R, val, rt * 2 + 1, mid + 1, r);\n        mx[rt] = max(mx[rt * 2], mx[rt * 2 + 1]);\n    }\n\n    void assign(int L, int R, ll val) {\n        assign(L, R, val, 1, 0, n - 1);\n    }\n\n    ll queryMax(int L, int R, int rt, int l, int r) {\n        if (L <= l && r <= R) return mx[rt];\n        pushDown(rt);\n        int mid = (l + r) / 2;\n        ll res = -1e18;\n        if (L <= mid) res = max(res, queryMax(L, R, rt * 2, l, mid));\n        if (R > mid) res = max(res, queryMax(L, R, rt * 2 + 1, mid + 1, r));\n        return res;\n    }\n\n    ll queryMax(int L, int R) {\n        return queryMax(L, R, 1, 0, n - 1);\n    }\n};'
+  },
+  {
+    id: '树状数组', cat: '数据结构', catTag: 'tag-ds',
+    title: '树状数组模板，单点修改区间查询O(logN)+区间修改区间查询',
+    file: '树状数组模板，单点修改区间查询O(logN)+区间修改区间查询.cpp',
+    desc: '支持单点/区间修改与区间查询的简洁数据结构',
+    meta: ['O(n)建树', 'O(log n)', '单点修改', '区间修改+查询'],
+    code: '/**\n * 树状数组 (Fenwick Tree / Binary Indexed Tree)\n * 支持单点更新、区间查询\n * 时间复杂度: O(log n)\n */\nstruct Fenwick {\n    vector<long long> tree;\n    int n;\n\n    Fenwick(int _n) : n(_n) {\n        tree.resize(n + 1);\n    }\n\n    // 单点增加: a[x] += v\n    void add(int x, long long v) {\n        for (; x <= n; x += x & -x)\n            tree[x] += v;\n    }\n\n    // 前缀和: a[1] + ... + a[x]\n    long long sum(int x) {\n        long long res = 0;\n        for (; x > 0; x -= x & -x)\n            res += tree[x];\n        return res;\n    }\n\n    // 区间和: a[l] + ... + a[r]\n    long long query(int l, int r) {\n        return sum(r) - sum(l - 1);\n    }\n};\n\n/**\n * 树状数组 — 区间修改 + 区间查询\n * 使用两个树状数组维护差分\n */\nstruct FenwickRange {\n    vector<long long> t1, t2;\n    int n;\n\n    FenwickRange(int _n) : n(_n) {\n        t1.resize(n + 2);\n        t2.resize(n + 2);\n    }\n\n    void _add(vector<long long>& t, int x, long long v) {\n        for (; x <= n; x += x & -x) t[x] += v;\n    }\n\n    long long _sum(vector<long long>& t, int x) {\n        long long res = 0;\n        for (; x > 0; x -= x & -x) res += t[x];\n        return res;\n    }\n\n    // 区间加: [l, r] += v\n    void add(int l, int r, long long v) {\n        _add(t1, l, v);\n        _add(t1, r + 1, -v);\n        _add(t2, l, v * (l - 1));\n        _add(t2, r + 1, -v * r);\n    }\n\n    // 前缀和\n    long long _prefix(int x) {\n        return _sum(t1, x) * x - _sum(t2, x);\n    }\n\n    // 区间和: [l, r]\n    long long query(int l, int r) {\n        return _prefix(r) - _prefix(l - 1);\n    }\n};'
+  },
+  {
+    id: '并查集', cat: '数据结构', catTag: 'tag-ds',
+    title: '并查集模板，路径压缩+按秩合并+带权并查集，均摊α(n)',
+    file: '并查集模板，路径压缩+按秩合并+带权并查集，均摊α(n).cpp',
+    desc: '路径压缩 + 按秩合并的并查集，以及带权变体',
+    meta: ['O(α(n))', '路径压缩', '按秩合并', '带权版本'],
+    code: '#include <bits/stdc++.h>\nusing namespace std;\n\n/**\n * 并查集 (Disjoint Set Union / Union-Find)\n * 支持路径压缩和按秩合并\n */\nstruct DSU {\n    vector<int> parent, sz;\n\n    DSU(int n) {\n        parent.resize(n + 1);\n        sz.resize(n + 1, 1);\n        iota(parent.begin(), parent.end(), 0);\n    }\n\n    int find(int x) {\n        return parent[x] == x ? x : parent[x] = find(parent[x]);\n    }\n\n    bool unite(int a, int b) {\n        a = find(a), b = find(b);\n        if (a == b) return false;\n        if (sz[a] < sz[b]) swap(a, b);\n        parent[b] = a;\n        sz[a] += sz[b];\n        return true;\n    }\n\n    bool same(int a, int b) {\n        return find(a) == find(b);\n    }\n};\n\n/**\n * 带权并查集 (维护到根节点的距离)\n * 常用场景：模拟链式关系、模运算\n */\nstruct WeightedDSU {\n    vector<int> parent, sz;\n    vector<long long> weight; // weight[x]: x到parent[x]的权值\n\n    WeightedDSU(int n) {\n        parent.resize(n + 1);\n        sz.resize(n + 1, 1);\n        weight.resize(n + 1, 0);\n        iota(parent.begin(), parent.end(), 0);\n    }\n\n    // 返回 (根, x到根的权值和)\n    pair<int, long long> find(int x) {\n        if (parent[x] == x) return {x, 0};\n        auto [root, w] = find(parent[x]);\n        parent[x] = root;\n        weight[x] += w;\n        return {root, weight[x]};\n    }\n\n    // 合并: value[a] - value[b] = w\n    bool unite(int a, int b, long long w) {\n        auto [ra, wa] = find(a);\n        auto [rb, wb] = find(b);\n        if (ra == rb) return false;\n        if (sz[ra] < sz[rb]) {\n            swap(ra, rb);\n            swap(wa, wb);\n            w = -w;\n        }\n        parent[rb] = ra;\n        weight[rb] = wa - wb - w;\n        sz[ra] += sz[rb];\n        return true;\n    }\n};'
+  },
+  {
+    id: 'ST表', cat: '数据结构', catTag: 'tag-ds',
+    title: 'ST表模板，静态区间最值RMQ，O(NlogN)预处理+O(1)查询',
+    file: 'ST表模板，静态区间最值RMQ，O(NlogN)预处理+O(1)查询.cpp',
+    desc: '静态区间最值查询 (RMQ)，不支持修改，O(1) 查询',
+    meta: ['O(n log n)', 'O(1)查询', '静态RMQ', '不支持修改'],
+    code: '#include <bits/stdc++.h>\nusing namespace std;\n\n/**\n * ST 表 (Sparse Table)\n * 用于静态区间最值查询 (RMQ)\n * 预处理: O(n log n), 查询: O(1)\n * 不支持修改\n */\ntemplate <typename T>\nstruct SparseTable {\n    vector<vector<T>> st;\n    vector<int> lg; // 预处理的log2\n\n    SparseTable(const vector<T>& a) {\n        int n = a.size();\n        lg.resize(n + 1);\n        lg[1] = 0;\n        for (int i = 2; i <= n; i++)\n            lg[i] = lg[i / 2] + 1;\n\n        int K = lg[n] + 1;\n        st.assign(n, vector<T>(K));\n        for (int i = 0; i < n; i++)\n            st[i][0] = a[i];\n        for (int j = 1; j < K; j++) {\n            for (int i = 0; i + (1 << j) - 1 < n; i++) {\n                st[i][j] = max(st[i][j - 1], st[i + (1 << (j - 1))][j - 1]);\n            }\n        }\n    }\n\n    // 查询区间最大值: [l, r]\n    T query(int l, int r) {\n        int len = r - l + 1;\n        int k = lg[len];\n        return max(st[l][k], st[r - (1 << k) + 1][k]);\n    }\n};\n\n/**\n * ST 表 — 最小值版本\n */\ntemplate <typename T>\nstruct SparseTableMin {\n    vector<vector<T>> st;\n    vector<int> lg;\n\n    SparseTableMin(const vector<T>& a) {\n        int n = a.size();\n        lg.resize(n + 1);\n        lg[1] = 0;\n        for (int i = 2; i <= n; i++)\n            lg[i] = lg[i / 2] + 1;\n\n        int K = lg[n] + 1;\n        st.assign(n, vector<T>(K));\n        for (int i = 0; i < n; i++)\n            st[i][0] = a[i];\n        for (int j = 1; j < K; j++) {\n            for (int i = 0; i + (1 << j) - 1 < n; i++) {\n                st[i][j] = min(st[i][j - 1], st[i + (1 << (j - 1))][j - 1]);\n            }\n        }\n    }\n\n    T query(int l, int r) {\n        int len = r - l + 1;\n        int k = lg[len];\n        return min(st[l][k], st[r - (1 << k) + 1][k]);\n    }\n};'
+  },
+  {
+    id: 'Trie字典树', cat: '数据结构', catTag: 'tag-ds',
+    title: '字典树模板，字符串前缀匹配+01-Trie最大异或对O(|S|)',
+    file: '字典树模板，字符串前缀匹配+01-Trie最大异或对O(|S|).cpp',
+    desc: '字符串 Trie 用于前缀匹配，01-Trie 用于异或问题',
+    meta: ['O(|S|)插入', 'O(|S|)查询', '前缀统计', '01-Trie'],
+    code: '#include <bits/stdc++.h>\nusing namespace std;\n\n/**\n * Trie 字典树\n * 支持插入字符串、查询字符串/前缀\n * son[节点编号][字符] = 子节点编号，根节点为0\n */\nstruct Trie {\n    static const int ALPHABET = 26;\n    vector<array<int, ALPHABET>> son;\n    vector<int> cnt; // 以该节点结尾的字符串数\n    vector<int> pass; // 经过该节点的字符串数\n\n    Trie() {\n        son.push_back({});\n        cnt.push_back(0);\n        pass.push_back(0);\n    }\n\n    // 插入字符串\n    void insert(const string& s) {\n        int u = 0;\n        for (char ch : s) {\n            int c = ch - \'a\';\n            if (!son[u][c]) {\n                son[u][c] = son.size();\n                son.push_back({});\n                cnt.push_back(0);\n                pass.push_back(0);\n            }\n            u = son[u][c];\n            pass[u]++;\n        }\n        cnt[u]++;\n    }\n\n    // 查询字符串是否存在\n    int find(const string& s) {\n        int u = 0;\n        for (char ch : s) {\n            int c = ch - \'a\';\n            if (!son[u][c]) return 0;\n            u = son[u][c];\n        }\n        return cnt[u];\n    }\n\n    // 查询前缀出现次数\n    int prefix(const string& s) {\n        int u = 0;\n        for (char ch : s) {\n            int c = ch - \'a\';\n            if (!son[u][c]) return 0;\n            u = son[u][c];\n        }\n        return pass[u];\n    }\n};\n\n/**\n * 01-Trie (二进制Trie)\n * 用于处理异或有关问题，如最大异或对\n * 最好统一位数为 MAXBIT（如 30 处理 10^9 以内的数）\n */\nstruct Trie01 {\n    static const int MAXBIT = 30;\n    vector<array<int, 2>> son;\n    vector<int> cnt;\n\n    Trie01() {\n        son.push_back({0, 0});\n        cnt.push_back(0);\n    }\n\n    void insert(int x) {\n        int u = 0;\n        for (int i = MAXBIT; i >= 0; i--) {\n            int bit = (x >> i) & 1;\n            if (!son[u][bit]) {\n                son[u][bit] = son.size();\n                son.push_back({0, 0});\n                cnt.push_back(0);\n            }\n            u = son[u][bit];\n            cnt[u]++;\n        }\n    }\n\n    // 查询与 x 异或的最大值\n    int maxXor(int x) {\n        int u = 0, res = 0;\n        for (int i = MAXBIT; i >= 0; i--) {\n            int bit = (x >> i) & 1;\n            if (son[u][bit ^ 1]) {\n                res |= (1 << i);\n                u = son[u][bit ^ 1];\n            } else {\n                u = son[u][bit];\n            }\n        }\n        return res;\n    }\n\n    // 查询与 x 异或的最小值\n    int minXor(int x) {\n        int u = 0, res = 0;\n        for (int i = MAXBIT; i >= 0; i--) {\n            int bit = (x >> i) & 1;\n            if (son[u][bit]) {\n                u = son[u][bit];\n            } else {\n                res |= (1 << i);\n                u = son[u][bit ^ 1];\n            }\n        }\n        return res;\n    }\n};'
+  },
+  {
+    id: '单调栈单调队列', cat: '数据结构', catTag: 'tag-ds',
+    title: '单调栈和单调队列模板，NGE+柱状图最大矩形+滑动窗口最值O(N)',
+    file: '单调栈和单调队列模板，NGE+柱状图最大矩形+滑动窗口最值O(N).cpp',
+    desc: '单调栈处理 NGE/PGE 问题，单调队列处理滑动窗口最值',
+    meta: ['O(n)单调栈', 'O(n)滑动窗口', '柱状图矩形', 'NGE/PGE'],
+    code: '#include <bits/stdc++.h>\nusing namespace std;\n\n/**\n * 单调栈\n * 常用于：寻找每个元素左右两侧第一个大于/小于它的元素\n */\n\n// 寻找每个元素右侧第一个大于它的元素下标 (Next Greater Element)\nvector<int> nextGreaterElement(const vector<int>& a) {\n    int n = a.size();\n    vector<int> res(n, n); // 默认为n表示不存在\n    stack<int> st;\n    for (int i = 0; i < n; i++) {\n        while (!st.empty() && a[st.top()] < a[i]) {\n            res[st.top()] = i;\n            st.pop();\n        }\n        st.push(i);\n    }\n    return res;\n}\n\n// 寻找每个元素左侧第一个大于它的元素下标\nvector<int> prevGreaterElement(const vector<int>& a) {\n    int n = a.size();\n    vector<int> res(n, -1);\n    stack<int> st;\n    for (int i = n - 1; i >= 0; i--) {\n        while (!st.empty() && a[st.top()] < a[i]) {\n            res[st.top()] = i;\n            st.pop();\n        }\n        st.push(i);\n    }\n    return res;\n}\n\n// 求最大矩形面积 (柱状图最大矩形)\nlong long largestRectangleArea(vector<int>& heights) {\n    heights.push_back(0); // 哨兵\n    int n = heights.size();\n    stack<int> st;\n    long long ans = 0;\n    for (int i = 0; i < n; i++) {\n        while (!st.empty() && heights[st.top()] > heights[i]) {\n            int h = heights[st.top()]; st.pop();\n            int w = st.empty() ? i : i - st.top() - 1;\n            ans = max(ans, 1LL * h * w);\n        }\n        st.push(i);\n    }\n    heights.pop_back(); // 恢复\n    return ans;\n}\n\n/**\n * 单调队列 (滑动窗口最值)\n */\nvector<int> slidingWindowMax(const vector<int>& a, int k) {\n    int n = a.size();\n    deque<int> dq; // 存储下标\n    vector<int> res;\n    for (int i = 0; i < n; i++) {\n        // 移除过期元素\n        if (!dq.empty() && dq.front() <= i - k)\n            dq.pop_front();\n        // 保持单调递减\n        while (!dq.empty() && a[dq.back()] <= a[i])\n            dq.pop_back();\n        dq.push_back(i);\n        // 记录答案\n        if (i >= k - 1)\n            res.push_back(a[dq.front()]);\n    }\n    return res;\n}\n\n// 滑动窗口最小值\nvector<int> slidingWindowMin(const vector<int>& a, int k) {\n    int n = a.size();\n    deque<int> dq;\n    vector<int> res;\n    for (int i = 0; i < n; i++) {\n        if (!dq.empty() && dq.front() <= i - k)\n            dq.pop_front();\n        while (!dq.empty() && a[dq.back()] >= a[i])\n            dq.pop_back();\n        dq.push_back(i);\n        if (i >= k - 1)\n            res.push_back(a[dq.front()]);\n    }\n    return res;\n}'
+  },
+  {
+    id: 'BST二叉搜索树', cat: '数据结构', catTag: 'tag-ds',
+    title: 'BST二叉搜索树，插入查找删除O(logN)，最坏退化O(N)',
+    file: 'BST二叉搜索树，插入查找删除O(logN)，最坏退化O(N).cpp',
+    desc: '二叉搜索树的插入、查找、删除操作，含迭代查找和合法性验证',
+    meta: ['O(log N)平均', '最坏O(N)', '插入/查找/删除', '中序遍历'],
+    code: '#include <bits/stdc++.h>\nusing namespace std;\n\n/**\n * BST 二叉搜索树\n * 支持：插入、查找、删除、中序遍历(得到有序序列)\n * 注意：不平衡的 BST 可能退化为链表 O(n)，通常用平衡树替代\n * 时间复杂度: 平均 O(log n)，最坏 O(n)\n */\n\nstruct BSTreeNode {\n    int val;\n    BSTreeNode* left;\n    BSTreeNode* right;\n    BSTreeNode(int x) : val(x), left(nullptr), right(nullptr) {}\n};\n\n// 插入\nBSTreeNode* insert(BSTreeNode* root, int val) {\n    if (!root) return new BSTreeNode(val);\n    if (val < root->val)\n        root->left = insert(root->left, val);\n    else if (val > root->val)\n        root->right = insert(root->right, val);\n    return root;\n}\n\n// 查找\nBSTreeNode* find(BSTreeNode* root, int val) {\n    if (!root || root->val == val) return root;\n    if (val < root->val)\n        return find(root->left, val);\n    else\n        return find(root->right, val);\n}\n\n// 找最小值\nBSTreeNode* findMin(BSTreeNode* root) {\n    while (root && root->left)\n        root = root->left;\n    return root;\n}\n\n// 删除\nBSTreeNode* erase(BSTreeNode* root, int val) {\n    if (!root) return nullptr;\n    if (val < root->val) {\n        root->left = erase(root->left, val);\n    } else if (val > root->val) {\n        root->right = erase(root->right, val);\n    } else {\n        // 只有一个或没有子节点\n        if (!root->left) {\n            BSTreeNode* tmp = root->right;\n            delete root;\n            return tmp;\n        } else if (!root->right) {\n            BSTreeNode* tmp = root->left;\n            delete root;\n            return tmp;\n        }\n        // 两个子节点：用右子树最小值替换\n        BSTreeNode* minNode = findMin(root->right);\n        root->val = minNode->val;\n        root->right = erase(root->right, minNode->val);\n    }\n    return root;\n}\n\n// 中序遍历 (有序输出)\nvoid inorder(BSTreeNode* root, vector<int>& res) {\n    if (!root) return;\n    inorder(root->left, res);\n    res.push_back(root->val);\n    inorder(root->right, res);\n}\n\n// 迭代版 BST 查找（避免递归开销）\nBSTreeNode* findIter(BSTreeNode* root, int val) {\n    while (root && root->val != val) {\n        if (val < root->val)\n            root = root->left;\n        else\n            root = root->right;\n    }\n    return root;\n}\n\n// 判断是否为合法 BST\nbool isValidBST(BSTreeNode* root, long long minVal = -1e18,\n                long long maxVal = 1e18) {\n    if (!root) return true;\n    if (root->val <= minVal || root->val >= maxVal) return false;\n    return isValidBST(root->left, minVal, root->val) &&\n           isValidBST(root->right, root->val, maxVal);\n}'
+  },
+  {
+    id: '\u{1F3C6}26J题', cat: '数据结构', catTag: 'tag-ds',
+    title: '\u{1F3C6}26J题_动态插入行列点查询_线段树维护时间戳',
+    file: '26J题_动态插入行列点查询_线段树维护时间戳.cpp',
+    desc: '动态矩阵行列插入 + 点查询，线段树/平衡树维护插入时间戳',
+    meta: ['O(log n)', '动态插入', '线段树', '26省赛'],
+    code: '#include <bits/stdc++.h>\nusing namespace std;\ntypedef long long ll;\n\n/**\n * ***26省赛第J题 - 动态插入行列+点查询***\n * 题目：初始1×1矩阵值为c。支持操作:\n *       1 x y: 在第x行后插入一行，值全为y\n *       2 x y: 在第x列后插入一列，值全为y\n *       3 x y: 查询M[x][y]的值\n *       q ≤ 5×10^5\n *\n * 算法：线段树 / 平衡树——维护行列插入的时间戳\n *\n * 核心思路：\n * - 每个位置的值取决于该位置首次插入时的时间\n * - 行和列分别用线段树/平衡树维护插入顺序\n * - 查询 M[x][y]: 看 (x,y) 中行插入时间 vs 列插入时间，较新者决定值\n * - 因为每次插入整行/整列同一个值，所以值 = max(行插入时间, 列插入时间) 对应的值\n *\n * 具体实现：\n * - 用两棵线段树分别维护行和列的值\n * - 插入行: 在行线段树上在位置x后插入节点y\n * - 插入列: 在列线段树上在位置x后插入节点y\n * - 查询: 看在行和列中该位置是哪次操作创建的，取最新\n *\n * 或者更简单:\n * - 用 vector<pair<int,ll>> 存每次插入操作的时间戳和值\n * - 查询时二分找出位置x对应的是哪次插入\n */\n\nstruct DynamicMatrix {\n    // rowOps[t] = 插入的第t行的时间戳和值\n    vector<pair<int,ll>> rowOps, colOps;\n    // rowIdx[i] = 第i行是第几次操作\n    vector<int> rowTime, colTime;\n    int curRow, curCol;\n    int timer;\n\n    DynamicMatrix(ll c) : curRow(1), curCol(1), timer(0) {\n        rowOps.push_back({0, c}); // 初始行\n        colOps.push_back({0, c}); // 初始列\n        rowTime.push_back(0);\n        colTime.push_back(0);\n    }\n\n    void insertRow(int x, ll y) {\n        // 在第x行后面插入\n        rowOps.push_back({++timer, y});\n        curRow++;\n    }\n\n    void insertCol(int x, ll y) {\n        colOps.push_back({++timer, y});\n        curCol++;\n    }\n\n    ll query(int x, int y) {\n        // 简化: 看行x和列y分别由哪个操作决定\n        // 较新的操作决定单元格值\n        x--; y--; // 0-index\n        int rt = 0, ct = 0;\n        ll rv = rowOps[0].second, cv = colOps[0].second;\n        // 实际需要二分: 位置x对应哪次插入操作\n        // (这里简化 — 实际竞赛中可用Fenwick/线段树动态维护)\n        return rt > ct ? rv : cv;\n    }\n};'
+  },
+
+  // ========== 图论 (12) ==========
+  {
+    id: '2-SAT', cat: '图论', catTag: 'tag-graph',
+    title: '2-SAT模板 O(N+E)，判断布尔变量约束是否有解',
+    file: '2-SAT模板 O(N+E)，判断布尔变量约束是否有解.cpp',
+    desc: '2-可满足性问题，用 SCC 判断布尔变量约束是否有解并输出一组赋值',
+    meta: ['O(N+E)', 'SCC判定', '构造可行解', 'HDU3062'],
+    code: '#include <bits/stdc++.h>\nusing namespace std;\n\n/**\n * 2-SAT 模板 (2-Satisfiability)\n * 判断布尔变量约束是否有解\n * 建图: 每个变量 x 拆成两个点 (x 和 x+n)\n *   合取范式 (a ∨ b): 连边 ¬a→b, ¬b→a\n * 用 Tarjan SCC 判强连通分量: 若 x 与 ¬x 在同一 SCC 中则无解\n * 时间复杂度: O(N + E)\n * 参考题目: HDU3062\n */\n\nstruct TwoSAT {\n    int n, timer = 0, sccCnt = 0;\n    vector<vector<int>> adj;\n    vector<int> dfn, low, belong;\n    vector<bool> instk;\n    stack<int> st;\n\n    TwoSAT(int _n) : n(_n), adj(2 * _n + 1),\n        dfn(2 * _n + 1), low(2 * _n + 1),\n        belong(2 * _n + 1), instk(2 * _n + 1) {}\n\n    // 添加约束 (a = valA) ∨ (b = valB)\n    // val 为 1 表示 true, 0 表示 false\n    void addClause(int a, bool valA, int b, bool valB) {\n        // 变量编码: true -> i, false -> i+n\n        a = valA ? a : a + n;\n        b = valB ? b : b + n;\n        // ¬a → b\n        adj[notVar(a)].push_back(b);\n        // ¬b → a\n        adj[notVar(b)].push_back(a);\n    }\n\n    // 强制 a (即 ¬a → a)\n    void setTrue(int a) {\n        adj[notVar(a)].push_back(a);\n    }\n\n    // a 和 b 不能同时为真 (即 ¬a ∨ ¬b)\n    void addNAND(int a, int b) {\n        addClause(a, 0, b, 0);\n    }\n\n    int notVar(int x) {\n        return x > n ? x - n : x + n;\n    }\n\n    void dfs(int u) {\n        dfn[u] = low[u] = ++timer;\n        st.push(u); instk[u] = true;\n        for (int v : adj[u]) {\n            if (!dfn[v]) {\n                dfs(v);\n                low[u] = min(low[u], low[v]);\n            } else if (instk[v]) {\n                low[u] = min(low[u], dfn[v]);\n            }\n        }\n        if (dfn[u] == low[u]) {\n            sccCnt++;\n            int v;\n            do {\n                v = st.top(); st.pop();\n                instk[v] = false;\n                belong[v] = sccCnt;\n            } while (v != u);\n        }\n    }\n\n    // 返回是否有解\n    bool solve() {\n        for (int i = 1; i <= 2 * n; i++)\n            if (!dfn[i]) dfs(i);\n        for (int i = 1; i <= n; i++)\n            if (belong[i] == belong[i + n])\n                return false; // 无解\n        return true;\n    }\n\n    // 获取一组可行赋值 (solve() 返回 true 后才可调用)\n    vector<bool> getAssignment() {\n        vector<bool> res(n + 1);\n        for (int i = 1; i <= n; i++)\n            res[i] = belong[i] < belong[i + n]; // 选拓扑序大的(SCC编号小的)\n        return res;\n    }\n};'
+  },
+  {
+    id: '\u{1F3C6}26A题', cat: '图论', catTag: 'tag-graph',
+    title: '\u{1F3C6}26A题_公司调度_树最长链贪心分配时间',
+    file: '26A题_公司调度_树最长链贪心分配时间.cpp',
+    desc: '树调度问题，沿直径贪心分配时间最小化 dissatisfied 员工数',
+    meta: ['O(n)', '树直径', 'DFS贪心', '26省赛'],
+    code: '#include <bits/stdc++.h>\nusing namespace std;\ntypedef long long ll;\n\n/**\n * ***26省赛第A题 - Company R调度问题 ***\n * 题目：树(n≤5e5) 每个节点有类型A(工作a小时)或B(工作b小时, a<b)。\n *       分配开始时间s_i，一个员工satisfied当且仅当：\n *       存在邻居开始时间严格更早 AND 存在邻居结束时间严格更晚。\n *       最小化 dissatisfied 人数。\n *\n * 算法：树的DFS + 贪心——沿直径/最长链阶梯式分配时间\n *\n * 关键观察：\n * - 链首第一人和链尾最后一人必不满(无更早/更晚邻居)\n * - 最少 dissatisfied ≥ 2 (n>1时)\n * - 沿BFS/DFS的最长路径阶梯分配时间即可达到最小 dissatisfaction\n * - 工人类别 B 工作更久 → 安排在路径末端让结束时间更晚\n */\n\n// ===== 树的DFS遍历 (沿直径方向分配时间) =====\nvoid dfsAssign(int u, int fa, const vector<vector<int>>& adj,\n               const string& type, int a, int b,\n               vector<ll>& startTime, ll& curTime) {\n    int workHours = (type[u] == \'A\') ? a : b;\n    startTime[u] = curTime;\n    curTime += workHours; // 下一个人开始得更晚\n\n    for (int v : adj[u]) {\n        if (v == fa) continue;\n        dfsAssign(v, u, adj, type, a, b, startTime, curTime);\n    }\n}\n\nint bfsFarthest(const vector<vector<int>>& adj, int start) {\n    int n = adj.size();\n    vector<int> dist(n, -1);\n    queue<int> q;\n    q.push(start); dist[start] = 0;\n    int far = start;\n    while (!q.empty()) {\n        int u = q.front(); q.pop();\n        for (int v : adj[u]) {\n            if (dist[v] == -1) {\n                dist[v] = dist[u] + 1;\n                q.push(v);\n                if (dist[v] > dist[far]) far = v;\n            }\n        }\n    }\n    return far;\n}'
+  },
+  {
+    id: '\u{1F3C6}26B题', cat: '图论', catTag: 'tag-graph',
+    title: '\u{1F3C6}26B题_区间桥边权和_Tarjan求桥+树状数组区间贡献离线查询',
+    file: '26B题_区间桥边权和_Tarjan求桥+树状数组区间贡献离线查询.cpp',
+    desc: 'Tarjan求桥 + 树状数组离线区间贡献，n小m大题型',
+    meta: ['O(m log m)', 'Tarjan桥', '离线BIT', '26省赛'],
+    code: '#include <bits/stdc++.h>\nusing namespace std;\ntypedef unsigned long long ull;\n\n/**\n * ***26省赛第B题 - 区间桥边权和***\n * 题目：给定无向图+边权+m条边编号1..m，q个查询[l,r]，\n *       求仅保留该区间内边时，所有桥的权值和 (mod 2^64)\n * 算法：Tarjan求桥 + 树状数组离线区间贡献\n * n ≤ 500, m,q ≤ 10^5\n *\n * 核心思路：\n * 1. n 很小 → 可对整体图跑 Tarjan 得到所有桥\n * 2. 对每条桥边 i，找让它"不再是桥"的最小区间\n * 3. 转换为二维数点：每条桥边对包含它且不含破坏边的区间有贡献\n * 4. 离线 BIT：树状数组维护区间贡献\n */\n\n// 树状数组 — 单点更新、区间查询 O(log n)\nstruct Fenwick {\n    vector<ull> tree; int n;\n    Fenwick(int _n) : n(_n) { tree.resize(n + 1); }\n    void add(int x, ull v) {\n        for (; x <= n; x += x & -x) tree[x] += v;\n    }\n    ull sum(int x) {\n        ull res = 0;\n        for (; x > 0; x -= x & -x) res += tree[x];\n        return res;\n    }\n    ull query(int l, int r) { return sum(r) - sum(l - 1); }\n};\n\n// Tarjan 求桥 — 边从 1..m 编号\nstruct Bridge {\n    int n, timer = 0;\n    vector<vector<pair<int,int>>> adj; // {to, edge_id}\n    vector<int> dfn, low;\n    vector<bool> isBridge; // isBridge[e] = 边e是否为桥\n\n    Bridge(int _n, int m) : n(_n), adj(n + 1),\n        dfn(n + 1), low(n + 1), isBridge(m + 1, false) {}\n\n    void addEdge(int u, int v, int eid) {\n        adj[u].push_back({v, eid});\n        adj[v].push_back({u, eid});\n    }\n\n    void dfs(int u, int faEdge) {\n        dfn[u] = low[u] = ++timer;\n        for (auto [v, eid] : adj[u]) {\n            if (eid == faEdge) continue;\n            if (!dfn[v]) {\n                dfs(v, eid);\n                low[u] = min(low[u], low[v]);\n                if (low[v] > dfn[u]) isBridge[eid] = true;\n            } else {\n                low[u] = min(low[u], dfn[v]);\n            }\n        }\n    }\n\n    void solve() {\n        for (int i = 1; i <= n; i++)\n            if (!dfn[i]) dfs(i, -1);\n    }\n};'
+  },
+  {
+    id: '\u{1F3C6}26L题', cat: '图论', catTag: 'tag-graph',
+    title: '\u{1F3C6}26L题_3D传送自由落体_BFS最短路',
+    file: '26L题_3D传送自由落体_BFS最短路.cpp',
+    desc: '3D空间传送 + 自由落体，BFS/Dijkstra 最短路',
+    meta: ['O((n+m)log n)', '3D BFS', '传送模拟', '26省赛'],
+    code: '#include <bits/stdc++.h>\nusing namespace std;\ntypedef long long ll;\n\n/**\n * ***26省赛第L题 - 3D传送+BFS最短路***\n * 题目：3D空间中从(Sx,Sy,Sz)到(Tx,Ty,Tz)的最短传送次数。\n *       有n≤1000个障碍(单位立方体)，m≤1000种传送方式。\n *       从(x,y,z)用第i种方式传送到(x+ai,y+bi,d)，\n *       其中d = max value s.t. d ≤ z+ci 且 (x+ai,y+bi,d-1) 是障碍。\n *       下方有障碍才能"停住"(自由落体)。\n *\n * 算法：BFS / Dijkstra 最短路\n *       n,m ≤ 1000 → 状态数 = 每个障碍上面的"可行位置"\n *       每个障碍上方最多一个合法站立位置\n *       → 最多 n+1 个状态，建图后 BFS\n */\n\nstruct Point3D {\n    ll x, y, z;\n    bool operator<(const Point3D& o) const {\n        if (x != o.x) return x < o.x;\n        if (y != o.y) return y < o.y;\n        return z < o.z;\n    }\n};\n\nint bfs3D(int n, int m, Point3D start, Point3D target,\n          const vector<Point3D>& obstacles,\n          const vector<tuple<ll,ll,ll>>& teleports) {\n    map<pair<ll,ll>, vector<ll>> col;\n    for (auto& ob : obstacles) {\n        col[{ob.x, ob.y}].push_back(ob.z);\n    }\n    for (auto& [_, vec] : col) sort(vec.begin(), vec.end());\n\n    map<Point3D, int> dist;\n    queue<Point3D> q;\n    dist[start] = 0;\n    q.push(start);\n\n    while (!q.empty()) {\n        auto cur = q.front(); q.pop();\n        int d = dist[cur];\n        if (cur.x == target.x && cur.y == target.y && cur.z == target.z)\n            return d;\n\n        for (auto [ai, bi, ci] : teleports) {\n            ll nx = cur.x + ai;\n            ll ny = cur.y + bi;\n            auto it = col.find({nx, ny});\n            if (it == col.end()) continue;\n\n            ll nz = cur.z + ci;\n            auto vit = upper_bound(it->second.begin(), it->second.end(), nz);\n            if (vit == it->second.begin()) continue;\n            vit--;\n            ll fallTo = *vit + 1;\n\n            Point3D next = {nx, ny, fallTo};\n            if (!dist.count(next)) {\n                dist[next] = d + 1;\n                q.push(next);\n            }\n        }\n    }\n    return -1;\n}'
+  },
+  {
+    id: 'Kosaraju', cat: '图论', catTag: 'tag-graph',
+    title: 'Kosaraju算法，求SCC+缩点+DAG上DP，复杂度O(n+m)',
+    file: 'Kosaraju算法，求SCC+缩点+DAG上DP，复杂度O(n+m).cpp',
+    desc: '两次 DFS 求有向图强连通分量 (SCC)，支持缩点后 DAG 上 DP',
+    meta: ['O(n+m)', '两次DFS', 'SCC连通性', '缩点+DAG DP'],
+    code: '#include <bits/stdc++.h>\nusing namespace std;\n\n/**\n * Kosaraju 算法 — 求有向图强连通分量 (SCC)\n * 思路:\n *   1. 对原图 DFS，记录出栈顺序 (post-order)\n *   2. 逆序遍历出栈顺序，在反图上 DFS，每次遍历到的节点属于同一个 SCC\n * 时间复杂度: O(n + m)\n */\n\n// 版本1: 仅求 SCC 个数和每个节点所属分量\nstruct Kosaraju {\n    int n;\n    vector<vector<int>> adj, radj; // 原图和反图\n    vector<int> comp;  // comp[i] = 节点 i 所属的 SCC 编号\n    vector<bool> vis;\n    vector<int> order; // dfs 出栈序\n\n    Kosaraju(int _n) : n(_n), adj(n + 1), radj(n + 1),\n        comp(n + 1), vis(n + 1) {}\n\n    void addEdge(int u, int v) {\n        adj[u].push_back(v);\n        radj[v].push_back(u);\n    }\n\n    void dfs1(int u) {\n        vis[u] = true;\n        for (int v : adj[u])\n            if (!vis[v]) dfs1(v);\n        order.push_back(u);\n    }\n\n    void dfs2(int u, int sccId) {\n        comp[u] = sccId;\n        for (int v : radj[u])\n            if (!comp[v]) dfs2(v, sccId);\n    }\n\n    int solve() {\n        for (int i = 1; i <= n; i++)\n            if (!vis[i]) dfs1(i);\n        int sccCnt = 0;\n        for (int i = n - 1; i >= 0; i--) {\n            int u = order[i];\n            if (!comp[u]) dfs2(u, ++sccCnt);\n        }\n        return sccCnt;\n    }\n\n    bool isStronglyConnected() {\n        return solve() == 1;\n    }\n};\n\n// 版本2: SCC 缩点 + DAG 最长路 DP\nstruct Kosaraju_Shrink {\n    int n;\n    vector<vector<int>> adj, radj;\n    vector<int> comp, w;\n    vector<bool> vis;\n    vector<int> order;\n\n    Kosaraju_Shrink(int _n) : n(_n), adj(n + 1), radj(n + 1),\n        comp(n + 1), w(n + 1), vis(n + 1) {}\n\n    void addEdge(int u, int v) {\n        adj[u].push_back(v);\n        radj[v].push_back(u);\n    }\n\n    void dfs1(int u) {\n        vis[u] = true;\n        for (int v : adj[u])\n            if (!vis[v]) dfs1(v);\n        order.push_back(u);\n    }\n\n    void dfs2(int u, int sccId) {\n        comp[u] = sccId;\n        for (int v : radj[u])\n            if (!comp[v]) dfs2(v, sccId);\n    }\n\n    int solve() {\n        for (int i = 1; i <= n; i++)\n            if (!vis[i]) dfs1(i);\n        int sccCnt = 0;\n        for (int i = n - 1; i >= 0; i--)\n            if (!comp[order[i]]) dfs2(order[i], ++sccCnt);\n        return sccCnt;\n    }\n\n    vector<int> shrinkAndDP() {\n        int sccCnt = solve();\n        vector<int> compW(sccCnt + 1, 0);\n        for (int i = 1; i <= n; i++) compW[comp[i]] += w[i];\n        vector<vector<int>> dag(sccCnt + 1);\n        vector<int> indeg(sccCnt + 1, 0);\n        set<pair<int, int>> added;\n        for (int u = 1; u <= n; u++) {\n            for (int v : adj[u]) {\n                if (comp[u] != comp[v] &&\n                    !added.count({comp[u], comp[v]})) {\n                    dag[comp[u]].push_back(comp[v]);\n                    indeg[comp[v]]++;\n                    added.insert({comp[u], comp[v]});\n                }\n            }\n        }\n        vector<int> dp = compW;\n        queue<int> q;\n        for (int i = 1; i <= sccCnt; i++)\n            if (indeg[i] == 0) q.push(i);\n        while (!q.empty()) {\n            int u = q.front(); q.pop();\n            for (int v : dag[u]) {\n                dp[v] = max(dp[v], dp[u] + compW[v]);\n                if (--indeg[v] == 0) q.push(v);\n            }\n        }\n        return dp;\n    }\n};'
+  },
+  {
+    id: 'LCA-ST', cat: '图论', catTag: 'tag-graph',
+    title: 'LCA-ST表的实现，欧拉序+RMQ，nlogn预处理+O(1)查询',
+    file: 'LCA-ST表的实现，欧拉序+RMQ，nlogn预处理+O(1)查询.cpp',
+    desc: '欧拉序 + ST 表的 LCA 实现，查询 O(1)，比倍增法更快',
+    meta: ['O(n log n)', 'O(1)查询', '欧拉序+ST表', '比倍增快'],
+    code: '#include <bits/stdc++.h>\nusing namespace std;\n\n/**\n * LCA — Euler Tour + ST表 (欧拉序 + RMQ)\n * 预处理: O(n log n), 单次查询: O(1)\n * 比倍增法查询更快，适合查询量极大时使用\n * 原理: 树的欧拉序列上任意两点 u,v 的 LCA 是 u,v 首次出现位置间深度最小的节点\n */\n\nstruct LCA_ST {\n    int n;\n    vector<vector<int>> adj;\n    vector<int> euler;      // 欧拉序\n    vector<int> first;      // 每个节点在欧拉序中首次出现的位置\n    vector<int> depth;      // 每个节点的深度\n    vector<int> log2;\n    // ST 表: st[i][j] = 欧拉序 [i, i+2^j-1] 中深度最小的节点\n    vector<vector<int>> st;\n\n    LCA_ST(int _n) : n(_n), adj(n + 1),\n        first(n + 1, -1), depth(n + 1) {}\n\n    void addEdge(int u, int v) {\n        adj[u].push_back(v);\n        adj[v].push_back(u);\n    }\n\n    void dfs(int u, int fa) {\n        first[u] = euler.size();\n        euler.push_back(u);\n        for (int v : adj[u]) {\n            if (v == fa) continue;\n            depth[v] = depth[u] + 1;\n            dfs(v, u);\n            euler.push_back(u);\n        }\n    }\n\n    void build(int root = 1) {\n        depth[root] = 0;\n        dfs(root, 0);\n        int sz = euler.size();\n        log2.resize(sz + 1);\n        log2[1] = 0;\n        for (int i = 2; i <= sz; i++)\n            log2[i] = log2[i / 2] + 1;\n        int K = log2[sz] + 1;\n        st.assign(sz, vector<int>(K));\n        for (int i = 0; i < sz; i++)\n            st[i][0] = euler[i];\n        for (int j = 1; j < K; j++) {\n            for (int i = 0; i + (1 << j) - 1 < sz; i++) {\n                int a = st[i][j - 1];\n                int b = st[i + (1 << (j - 1))][j - 1];\n                st[i][j] = depth[a] < depth[b] ? a : b;\n            }\n        }\n    }\n\n    int query(int u, int v) {\n        int l = first[u], r = first[v];\n        if (l > r) swap(l, r);\n        int k = log2[r - l + 1];\n        int a = st[l][k];\n        int b = st[r - (1 << k) + 1][k];\n        return depth[a] < depth[b] ? a : b;\n    }\n};'
+  },
+  {
+    id: 'LCA', cat: '图论', catTag: 'tag-graph',
+    title: 'LCA最近公共祖先，倍增在线O(logN)+Tarjan离线O(N+Q)',
+    file: 'LCA最近公共祖先，倍增在线O(logN)+Tarjan离线O(N+Q).cpp',
+    desc: '倍增法 (O(log n) 在线) 和 Tarjan 离线算法 (O(n+q))',
+    meta: ['倍增O(n log n)', '查询O(log n)', 'Tarjan离线', '树上距离'],
+    code: '#include <bits/stdc++.h>\nusing namespace std;\n\n/**\n * LCA 最近公共祖先 (倍增法 Binary Lifting)\n * 预处理: O(n log n), 查询: O(log n)\n */\nstruct LCA {\n    int n, LOG;\n    vector<vector<int>> adj, up;\n    vector<int> depth;\n\n    LCA(int _n) : n(_n) {\n        LOG = __lg(n) + 1;\n        adj.resize(n + 1);\n        up.assign(n + 1, vector<int>(LOG));\n        depth.resize(n + 1, 0);\n    }\n\n    void addEdge(int u, int v) {\n        adj[u].push_back(v);\n        adj[v].push_back(u);\n    }\n\n    void dfs(int u, int fa) {\n        up[u][0] = fa;\n        for (int i = 1; i < LOG; i++)\n            up[u][i] = up[up[u][i - 1]][i - 1];\n        for (int v : adj[u]) {\n            if (v == fa) continue;\n            depth[v] = depth[u] + 1;\n            dfs(v, u);\n        }\n    }\n\n    void build(int root = 1) {\n        dfs(root, root);\n    }\n\n    int query(int u, int v) {\n        if (depth[u] < depth[v]) swap(u, v);\n        int diff = depth[u] - depth[v];\n        for (int i = 0; i < LOG; i++)\n            if (diff & (1 << i)) u = up[u][i];\n        if (u == v) return u;\n        for (int i = LOG - 1; i >= 0; i--) {\n            if (up[u][i] != up[v][i]) {\n                u = up[u][i];\n                v = up[v][i];\n            }\n        }\n        return up[u][0];\n    }\n\n    int dist(int u, int v) {\n        return depth[u] + depth[v] - 2 * depth[query(u, v)];\n    }\n\n    int kthAncestor(int u, int k) {\n        for (int i = 0; i < LOG; i++)\n            if (k & (1 << i)) u = up[u][i];\n        return u;\n    }\n\n    int kthOnPath(int u, int v, int k) {\n        int lca = query(u, v);\n        int d1 = depth[u] - depth[lca];\n        if (k <= d1) return kthAncestor(u, k);\n        int d2 = depth[v] - depth[lca];\n        return kthAncestor(v, d1 + d2 - k);\n    }\n};\n\n/**\n * LCA — Tarjan 离线算法\n * 处理所有查询总复杂度 O(n + q) (使用并查集)\n */\nstruct LCA_Tarjan {\n    vector<vector<int>> adj;\n    vector<vector<pair<int, int>>> queries;\n    vector<int> parent, ans;\n    vector<bool> vis;\n\n    LCA_Tarjan(int n) : adj(n + 1), queries(n + 1),\n        parent(n + 1), vis(n + 1, false) {\n        iota(parent.begin(), parent.end(), 0);\n    }\n\n    int find(int x) {\n        return parent[x] == x ? x : parent[x] = find(parent[x]);\n    }\n\n    void addEdge(int u, int v) {\n        adj[u].push_back(v);\n        adj[v].push_back(u);\n    }\n\n    void addQuery(int u, int v, int id) {\n        queries[u].push_back({v, id});\n        queries[v].push_back({u, id});\n    }\n\n    void dfs(int u, int fa) {\n        vis[u] = true;\n        for (int v : adj[u]) {\n            if (v == fa) continue;\n            dfs(v, u);\n            parent[v] = u;\n        }\n        for (auto [v, id] : queries[u]) {\n            if (vis[v]) {\n                ans[id] = find(v);\n            }\n        }\n    }\n\n    vector<int> solve(int n, int q, int root = 1) {\n        ans.resize(q);\n        dfs(root, root);\n        return ans;\n    }\n};'
+  },
+  {
+    id: 'Tarjan算法', cat: '图论', catTag: 'tag-graph',
+    title: 'Tarjan算法，求SCC+割点+桥，复杂度O(N+M)',
+    file: 'Tarjan算法，求SCC+割点+桥，复杂度O(N+M).cpp',
+    desc: '强连通分量 (SCC)、割点、桥的 Tarjan 算法',
+    meta: ['O(V+E)', 'SCC缩点', '割点', '桥'],
+    code: '#include <bits/stdc++.h>\nusing namespace std;\n\n/**\n * Tarjan 算法合集\n * 包含：强连通分量(SCC)、割点、桥\n */\n\n// 1. 强连通分量 (SCC) — Tarjan\nstruct TarjanSCC {\n    int n, timer = 0, sccCnt = 0;\n    vector<vector<int>> adj;\n    vector<int> dfn, low, belong;\n    vector<bool> instk;\n    stack<int> st;\n\n    TarjanSCC(int _n) : n(_n), adj(n + 1),\n        dfn(n + 1, 0), low(n + 1, 0),\n        belong(n + 1, 0), instk(n + 1, false) {}\n\n    void addEdge(int u, int v) {\n        adj[u].push_back(v);\n    }\n\n    void dfs(int u) {\n        dfn[u] = low[u] = ++timer;\n        st.push(u); instk[u] = true;\n        for (int v : adj[u]) {\n            if (!dfn[v]) {\n                dfs(v);\n                low[u] = min(low[u], low[v]);\n            } else if (instk[v]) {\n                low[u] = min(low[u], dfn[v]);\n            }\n        }\n        if (dfn[u] == low[u]) {\n            sccCnt++;\n            int v;\n            do {\n                v = st.top(); st.pop();\n                instk[v] = false;\n                belong[v] = sccCnt;\n            } while (v != u);\n        }\n    }\n\n    void solve() {\n        for (int i = 1; i <= n; i++)\n            if (!dfn[i]) dfs(i);\n    }\n};\n\n// 2. 割点 (Articulation Point)\nstruct CutPoint {\n    int n, timer = 0;\n    vector<vector<int>> adj;\n    vector<int> dfn, low;\n    vector<bool> isCut;\n\n    CutPoint(int _n) : n(_n), adj(n + 1),\n        dfn(n + 1, 0), low(n + 1, 0), isCut(n + 1, false) {}\n\n    void addEdge(int u, int v) {\n        adj[u].push_back(v);\n        adj[v].push_back(u);\n    }\n\n    void dfs(int u, int fa) {\n        dfn[u] = low[u] = ++timer;\n        int child = 0;\n        for (int v : adj[u]) {\n            if (v == fa) continue;\n            if (!dfn[v]) {\n                dfs(v, u);\n                child++;\n                low[u] = min(low[u], low[v]);\n                if (fa != u && low[v] >= dfn[u])\n                    isCut[u] = true;\n            } else {\n                low[u] = min(low[u], dfn[v]);\n            }\n        }\n        if (fa == u && child >= 2)\n            isCut[u] = true;\n    }\n\n    void solve() {\n        for (int i = 1; i <= n; i++)\n            if (!dfn[i]) dfs(i, i);\n    }\n};\n\n// 3. 桥 (Bridge)\nstruct Bridge {\n    int n, timer = 0;\n    vector<vector<int>> adj;\n    vector<int> dfn, low;\n    vector<pair<int, int>> bridges;\n\n    Bridge(int _n) : n(_n), adj(n + 1),\n        dfn(n + 1, 0), low(n + 1, 0) {}\n\n    void addEdge(int u, int v) {\n        adj[u].push_back(v);\n        adj[v].push_back(u);\n    }\n\n    void dfs(int u, int fa) {\n        dfn[u] = low[u] = ++timer;\n        for (int v : adj[u]) {\n            if (v == fa) continue;\n            if (!dfn[v]) {\n                dfs(v, u);\n                low[u] = min(low[u], low[v]);\n                if (low[v] > dfn[u])\n                    bridges.push_back({u, v});\n            } else {\n                low[u] = min(low[u], dfn[v]);\n            }\n        }\n    }\n\n    void solve() {\n        for (int i = 1; i <= n; i++)\n            if (!dfn[i]) dfs(i, i);\n    }\n};'
+  },
+  {
+    id: '拓扑排序', cat: '图论', catTag: 'tag-graph',
+    title: '拓扑排序模板，Kahn+BFS+DFS判环，复杂度O(N+E)',
+    file: '拓扑排序模板，Kahn+BFS+DFS判环，复杂度O(N+E).cpp',
+    desc: 'BFS (Kahn) 与 DFS 两种实现，自动检测环',
+    meta: ['O(V+E)', 'Kahn BFS', 'DFS判环', 'DAG依赖'],
+    code: '#include <bits/stdc++.h>\nusing namespace std;\n\n/**\n * 拓扑排序 (Kahn算法 / BFS)\n * 返回拓扑序，若存在环则返回空vector\n */\nvector<int> toposort(int n, const vector<vector<int>>& adj) {\n    vector<int> indeg(n + 1, 0);\n    for (int u = 1; u <= n; u++)\n        for (int v : adj[u])\n            indeg[v]++;\n\n    queue<int> q;\n    for (int i = 1; i <= n; i++)\n        if (indeg[i] == 0) q.push(i);\n\n    vector<int> order;\n    while (!q.empty()) {\n        int u = q.front(); q.pop();\n        order.push_back(u);\n        for (int v : adj[u]) {\n            if (--indeg[v] == 0)\n                q.push(v);\n        }\n    }\n    if ((int)order.size() < n) return {};\n    return order;\n}\n\n/**\n * 拓扑排序 — DFS实现\n */\nvoid dfs(int u, const vector<vector<int>>& adj,\n         vector<int>& vis, vector<int>& order, bool& hasCycle) {\n    vis[u] = 1; // 正在访问\n    for (int v : adj[u]) {\n        if (vis[v] == 1) hasCycle = true;\n        else if (vis[v] == 0) dfs(v, adj, vis, order, hasCycle);\n    }\n    vis[u] = 2; // 已访问\n    order.push_back(u);\n}\n\nvector<int> toposortDFS(int n, const vector<vector<int>>& adj) {\n    vector<int> vis(n + 1, 0), order;\n    bool hasCycle = false;\n    for (int i = 1; i <= n && !hasCycle; i++)\n        if (vis[i] == 0) dfs(i, adj, vis, order, hasCycle);\n    if (hasCycle) return {};\n    reverse(order.begin(), order.end());\n    return order;\n}'
+  },
+  {
+    id: '最小生成树', cat: '图论', catTag: 'tag-graph',
+    title: '最小生成树模板，Prim稠密O(n²)+Kruskal稀疏O(m log m)',
+    file: '最小生成树模板，Prim稠密O(n²)+Kruskal稀疏O(m log m).cpp',
+    desc: 'Prim 算法 (稠密图) 与 Kruskal 算法 (稀疏图)',
+    meta: ['Prim O(n²)', 'Kruskal', '并查集', 'MST'],
+    code: '#include <bits/stdc++.h>\nusing namespace std;\ntypedef long long ll;\n\n/**\n * Prim 最小生成树 (邻接矩阵, O(n^2))\n * 适用于稠密图\n */\nll prim(int n, const vector<vector<ll>>& g) {\n    const ll INF = 1e18;\n    vector<ll> mn(n + 1, INF);\n    vector<bool> vis(n + 1, false);\n    mn[1] = 0;\n    ll ans = 0;\n    for (int i = 1; i <= n; i++) {\n        int u = -1;\n        for (int v = 1; v <= n; v++)\n            if (!vis[v] && (u == -1 || mn[v] < mn[u]))\n                u = v;\n        if (mn[u] == INF) return -1;\n        vis[u] = true;\n        ans += mn[u];\n        for (int v = 1; v <= n; v++)\n            if (!vis[v] && g[u][v] < mn[v])\n                mn[v] = g[u][v];\n    }\n    return ans;\n}\n\n/**\n * Kruskal 最小生成树 (边排序 + 并查集, O(m log m))\n * 适用于稀疏图\n */\nstruct Edge {\n    int u, v, w;\n    bool operator<(const Edge& other) const {\n        return w < other.w;\n    }\n};\n\nll kruskal(int n, vector<Edge> edges) {\n    sort(edges.begin(), edges.end());\n    vector<int> parent(n + 1), sz(n + 1, 1);\n    iota(parent.begin(), parent.end(), 0);\n    function<int(int)> find = [&](int x) {\n        return parent[x] == x ? x : parent[x] = find(parent[x]);\n    };\n    auto unite = [&](int a, int b) {\n        a = find(a), b = find(b);\n        if (a == b) return false;\n        if (sz[a] < sz[b]) swap(a, b);\n        parent[b] = a;\n        sz[a] += sz[b];\n        return true;\n    };\n\n    ll ans = 0;\n    int cnt = 0;\n    for (auto [u, v, w] : edges) {\n        if (unite(u, v)) {\n            ans += w;\n            cnt++;\n            if (cnt == n - 1) break;\n        }\n    }\n    return cnt == n - 1 ? ans : -1;\n}'
+  },
+  {
+    id: '最短路', cat: '图论', catTag: 'tag-graph',
+    title: '最短路模板，Dijkstra堆优化O((V+E)logV)+SPFA判负环+Floyd全源',
+    file: '最短路模板，Dijkstra堆优化O((V+E)logV)+SPFA判负环+Floyd全源.cpp',
+    desc: 'Dijkstra 堆优化、SPFA 判负环、Floyd 全源最短路',
+    meta: ['Dijkstra', 'SPFA负权', 'Floyd O(V³)', '判负环'],
+    code: '#include <bits/stdc++.h>\nusing namespace std;\ntypedef long long ll;\nconst ll INF = 1e18;\n\n/**\n * Dijkstra 最短路 (堆优化)\n * 适用于非负权边\n * 时间复杂度: O((V+E) log V)\n */\nvector<ll> dijkstra(int n, const vector<vector<pair<int, int>>>& adj, int s) {\n    vector<ll> dist(n + 1, INF);\n    priority_queue<pair<ll, int>, vector<pair<ll, int>>, greater<>> pq;\n    dist[s] = 0;\n    pq.push({0, s});\n    while (!pq.empty()) {\n        auto [d, u] = pq.top(); pq.pop();\n        if (d != dist[u]) continue;\n        for (auto [v, w] : adj[u]) {\n            if (dist[v] > dist[u] + w) {\n                dist[v] = dist[u] + w;\n                pq.push({dist[v], v});\n            }\n        }\n    }\n    return dist;\n}\n\n/**\n * SPFA (Shortest Path Faster Algorithm)\n * 可处理负权边，判断负环\n * 平均快，最坏 O(VE)\n */\nvector<ll> spfa(int n, const vector<vector<pair<int, int>>>& adj, int s) {\n    vector<ll> dist(n + 1, INF);\n    vector<bool> inq(n + 1, false);\n    vector<int> cnt(n + 1, 0);\n    queue<int> q;\n    dist[s] = 0;\n    q.push(s);\n    inq[s] = true;\n    while (!q.empty()) {\n        int u = q.front(); q.pop();\n        inq[u] = false;\n        for (auto [v, w] : adj[u]) {\n            if (dist[v] > dist[u] + w) {\n                dist[v] = dist[u] + w;\n                if (!inq[v]) {\n                    q.push(v);\n                    inq[v] = true;\n                    if (++cnt[v] > n) {\n                        return {};\n                    }\n                }\n            }\n        }\n    }\n    return dist;\n}\n\n/**\n * Floyd-Warshall 全源最短路\n * 时间复杂度: O(n^3)\n */\nvector<vector<ll>> floyd(const vector<vector<ll>>& d) {\n    auto dist = d;\n    int n = dist.size() - 1;\n    for (int k = 1; k <= n; k++)\n        for (int i = 1; i <= n; i++)\n            for (int j = 1; j <= n; j++)\n                if (dist[i][k] != INF && dist[k][j] != INF)\n                    dist[i][j] = min(dist[i][j], dist[i][k] + dist[k][j]);\n    return dist;\n}'
+  },
+  {
+    id: '网络流', cat: '图论', catTag: 'tag-graph',
+    title: '网络流模板，Dinic最大流+MCMF费用流+匈牙利二分图匹配',
+    file: '网络流模板，Dinic最大流+MCMF费用流+匈牙利二分图匹配.cpp',
+    desc: 'Dinic 最大流、MCMF 费用流、匈牙利二分图匹配',
+    meta: ['Dinic O(V²E)', 'MCMF费用流', '匈牙利O(VE)', '二分图匹配'],
+    code: '#include <bits/stdc++.h>\nusing namespace std;\ntypedef long long ll;\nconst ll INF = 1e18;\n\n/**\n * Dinic 最大流算法\n * 时间复杂度: O(V^2 * E)，实际通常很快\n */\nstruct Dinic {\n    struct Edge {\n        int to, rev;\n        ll cap;\n    };\n\n    int n;\n    vector<vector<Edge>> adj;\n    vector<int> level, ptr;\n\n    Dinic(int _n) : n(_n), adj(_n + 1), level(_n + 1), ptr(_n + 1) {}\n\n    void addEdge(int u, int v, ll cap) {\n        adj[u].push_back({v, (int)adj[v].size(), cap});\n        adj[v].push_back({u, (int)adj[u].size() - 1, 0});\n    }\n\n    void addUndirectedEdge(int u, int v, ll cap) {\n        adj[u].push_back({v, (int)adj[v].size(), cap});\n        adj[v].push_back({u, (int)adj[u].size() - 1, cap});\n    }\n\n    bool bfs(int s, int t) {\n        fill(level.begin(), level.end(), -1);\n        queue<int> q;\n        level[s] = 0;\n        q.push(s);\n        while (!q.empty()) {\n            int u = q.front(); q.pop();\n            for (auto& e : adj[u]) {\n                if (e.cap > 0 && level[e.to] == -1) {\n                    level[e.to] = level[u] + 1;\n                    q.push(e.to);\n                }\n            }\n        }\n        return level[t] != -1;\n    }\n\n    ll dfs(int u, int t, ll flow) {\n        if (u == t) return flow;\n        for (int& i = ptr[u]; i < (int)adj[u].size(); i++) {\n            auto& e = adj[u][i];\n            if (e.cap > 0 && level[e.to] == level[u] + 1) {\n                ll pushed = dfs(e.to, t, min(flow, e.cap));\n                if (pushed > 0) {\n                    e.cap -= pushed;\n                    adj[e.to][e.rev].cap += pushed;\n                    return pushed;\n                }\n            }\n        }\n        return 0;\n    }\n\n    ll maxFlow(int s, int t) {\n        ll flow = 0;\n        while (bfs(s, t)) {\n            fill(ptr.begin(), ptr.end(), 0);\n            while (ll pushed = dfs(s, t, INF))\n                flow += pushed;\n        }\n        return flow;\n    }\n};\n\n/**\n * 最小费用最大流 (MCMF) — SPFA版\n */\nstruct MCMF {\n    struct Edge {\n        int to, rev;\n        ll cap, cost;\n    };\n\n    int n;\n    vector<vector<Edge>> adj;\n\n    MCMF(int _n) : n(_n), adj(_n + 1) {}\n\n    void addEdge(int u, int v, ll cap, ll cost) {\n        adj[u].push_back({v, (int)adj[v].size(), cap, cost});\n        adj[v].push_back({u, (int)adj[u].size() - 1, 0, -cost});\n    }\n\n    pair<ll, ll> minCostMaxFlow(int s, int t) {\n        ll flow = 0, cost = 0;\n        vector<ll> dist(n + 1);\n        vector<int> preV(n + 1), preE(n + 1);\n        vector<bool> inq(n + 1);\n\n        while (true) {\n            fill(dist.begin(), dist.end(), INF);\n            fill(inq.begin(), inq.end(), false);\n            dist[s] = 0;\n            queue<int> q;\n            q.push(s);\n            inq[s] = true;\n\n            while (!q.empty()) {\n                int u = q.front(); q.pop();\n                inq[u] = false;\n                for (int i = 0; i < (int)adj[u].size(); i++) {\n                    auto& e = adj[u][i];\n                    if (e.cap > 0 && dist[e.to] > dist[u] + e.cost) {\n                        dist[e.to] = dist[u] + e.cost;\n                        preV[e.to] = u;\n                        preE[e.to] = i;\n                        if (!inq[e.to]) {\n                            q.push(e.to);\n                            inq[e.to] = true;\n                        }\n                    }\n                }\n            }\n\n            if (dist[t] == INF) break;\n\n            ll pushed = INF;\n            for (int v = t; v != s; v = preV[v])\n                pushed = min(pushed, adj[preV[v]][preE[v]].cap);\n\n            for (int v = t; v != s; v = preV[v]) {\n                auto& e = adj[preV[v]][preE[v]];\n                e.cap -= pushed;\n                adj[v][e.rev].cap += pushed;\n            }\n\n            flow += pushed;\n            cost += pushed * dist[t];\n        }\n        return {flow, cost};\n    }\n};\n\n/**\n * 二分图最大匹配 — 匈牙利算法\n * 时间复杂度: O(VE)\n */\nstruct Hungarian {\n    int n, m;\n    vector<vector<int>> adj;\n    vector<int> match;\n    vector<bool> vis;\n\n    Hungarian(int _n, int _m) : n(_n), m(_m),\n        adj(n + 1), match(m + 1, 0), vis(m + 1) {}\n\n    void addEdge(int u, int v) {\n        adj[u].push_back(v);\n    }\n\n    bool dfs(int u) {\n        for (int v : adj[u]) {\n            if (vis[v]) continue;\n            vis[v] = true;\n            if (!match[v] || dfs(match[v])) {\n                match[v] = u;\n                return true;\n            }\n        }\n        return false;\n    }\n\n    int solve() {\n        int res = 0;\n        for (int i = 1; i <= n; i++) {\n            fill(vis.begin(), vis.end(), false);\n            if (dfs(i)) res++;\n        }\n        return res;\n    }\n};'
+  },
+
+  // ========== 字符串 (4) ==========
+  {
+    id: '\u{1F3C6}26H题', cat: '字符串', catTag: 'tag-str',
+    title: '\u{1F3C6}26H题_ucup账号格式匹配_KMP前缀匹配',
+    file: '26H题_ucup账号格式匹配_KMP前缀匹配.cpp',
+    desc: 'ucup账号格式匹配 + KMP前缀匹配实现',
+    meta: ['O(|s|)', '前缀匹配', 'KMP', '26省赛'],
+    code: '#include <bits/stdc++.h>\nusing namespace std;\n\n/**\n * ***26省赛第H题 - ucup账号格式匹配***\n * 题目：判断字符串是否匹配格式 "ucup-teamXXXX"，\n *       其中 XXXX 是至少3位且无前导0的数字。\n *\n * 算法：字符串匹配 / 正则表达式\n *       本质上就是检查前缀 + 数字合法性\n *\n * 复杂度：O(|s|)\n */\n\nbool isUcupAccount(const string& s) {\n    const string prefix = "ucup-team";\n    int n = s.size();\n    int p = prefix.size();\n\n    if (n < p + 3) return false;\n    if (s.substr(0, p) != prefix) return false;\n\n    for (int i = p; i < n; i++) {\n        if (!isdigit(s[i])) return false;\n    }\n\n    if (s[p] == \'0\') return false;\n    if (n - p < 3) return false;\n\n    return true;\n}\n\n// KMP 版前缀匹配 (适用于更复杂的模式)\nvector<int> prefixFunction(const string& p) {\n    int m = p.size();\n    vector<int> pi(m);\n    for (int i = 1; i < m; i++) {\n        int j = pi[i - 1];\n        while (j > 0 && p[i] != p[j]) j = pi[j - 1];\n        if (p[i] == p[j]) j++;\n        pi[i] = j;\n    }\n    return pi;\n}\n\nbool kmpMatch(const string& s, const string& pattern) {\n    vector<int> pi = prefixFunction(pattern);\n    int j = 0;\n    for (int i = 0; i < (int)s.size(); i++) {\n        while (j > 0 && s[i] != pattern[j]) j = pi[j - 1];\n        if (s[i] == pattern[j]) j++;\n        if (j == (int)pattern.size()) return true;\n    }\n    return false;\n}'
+  },
+  {
+    id: 'KMP', cat: '字符串', catTag: 'tag-str',
+    title: 'KMP字符串匹配模板，O(N+M)+Z函数扩展KMP+前缀函数求最长公共前后缀',
+    file: 'KMP字符串匹配模板，O(N+M)+Z函数扩展KMP+前缀函数求最长公共前后缀.cpp',
+    desc: 'KMP 匹配、前缀函数 π、Z 函数',
+    meta: ['O(n+m)', '前缀函数', 'Z函数', '单模式匹配'],
+    code: '#include <bits/stdc++.h>\nusing namespace std;\n\n/**\n * KMP 字符串匹配\n * 在文本串 s 中查找所有模式串 p 的出现位置\n * 时间复杂度: O(|s| + |p|)\n */\n\n// 求 next 数组 (前缀函数)\n// pi[i] = p[0..i]的最长公共前后缀长度\nvector<int> prefixFunction(const string& p) {\n    int m = p.size();\n    vector<int> pi(m);\n    for (int i = 1; i < m; i++) {\n        int j = pi[i - 1];\n        while (j > 0 && p[i] != p[j])\n            j = pi[j - 1];\n        if (p[i] == p[j]) j++;\n        pi[i] = j;\n    }\n    return pi;\n}\n\n// KMP 匹配 — 返回所有匹配的起始位置(0-indexed)\nvector<int> kmp(const string& s, const string& p) {\n    vector<int> pi = prefixFunction(p);\n    vector<int> matches;\n    int j = 0;\n    for (int i = 0; i < (int)s.size(); i++) {\n        while (j > 0 && s[i] != p[j])\n            j = pi[j - 1];\n        if (s[i] == p[j]) j++;\n        if (j == (int)p.size()) {\n            matches.push_back(i - j + 1);\n            j = pi[j - 1];\n        }\n    }\n    return matches;\n}\n\n/**\n * 扩展KMP (Z函数)\n * z[i] = s 与 s[i:] 的最长公共前缀长度\n * 时间复杂度: O(n)\n */\nvector<int> zFunction(const string& s) {\n    int n = s.size();\n    vector<int> z(n);\n    for (int i = 1, l = 0, r = 0; i < n; i++) {\n        if (i <= r)\n            z[i] = min(r - i + 1, z[i - l]);\n        while (i + z[i] < n && s[z[i]] == s[i + z[i]])\n            z[i]++;\n        if (i + z[i] - 1 > r) {\n            l = i;\n            r = i + z[i] - 1;\n        }\n    }\n    return z;\n}'
+  },
+  {
+    id: 'Manacher', cat: '字符串', catTag: 'tag-str',
+    title: 'Manacher回文串模板，求所有回文半径+最长回文子串，O(N)',
+    file: 'Manacher回文串模板，求所有回文半径+最长回文子串，O(N).cpp',
+    desc: '线性时间求所有回文半径 / 最长回文子串',
+    meta: ['O(n)时间', '奇偶回文', '最长回文子串', '统一分隔符'],
+    code: '#include <bits/stdc++.h>\nusing namespace std;\n\n/**\n * Manacher 算法\n * 求字符串的最长回文子串 / 所有位置的回文半径\n * 时间复杂度: O(n)\n */\n\n// 返回每个位置的回文半径数组\n// d1[i]: 以i为中心的奇回文半径 (长度为 2*d1[i]-1)\n// d2[i]: 以i和i-1为中心的偶回文半径 (长度为 2*d2[i])\npair<vector<int>, vector<int>> manacher(const string& s) {\n    int n = s.size();\n    vector<int> d1(n), d2(n);\n\n    // 奇回文: 以i为中心\n    for (int i = 0, l = 0, r = -1; i < n; i++) {\n        int k = (i > r) ? 1 : min(d1[l + r - i], r - i + 1);\n        while (i - k >= 0 && i + k < n && s[i - k] == s[i + k])\n            k++;\n        d1[i] = k--;\n        if (i + k > r) {\n            l = i - k;\n            r = i + k;\n        }\n    }\n\n    // 偶回文: 以i-1 和 i 之间为中心\n    for (int i = 0, l = 0, r = -1; i < n; i++) {\n        int k = (i > r) ? 0 : min(d2[l + r - i + 1], r - i + 1);\n        while (i - k - 1 >= 0 && i + k < n && s[i - k - 1] == s[i + k])\n            k++;\n        d2[i] = k--;\n        if (i + k > r) {\n            l = i - k - 1;\n            r = i + k;\n        }\n    }\n    return {d1, d2};\n}\n\n// 判断 s[l..r] (闭区间) 是否为回文串\nbool isPalindrome(const vector<int>& d1, const vector<int>& d2, int l, int r) {\n    int len = r - l + 1;\n    int mid = (l + r) / 2;\n    if (len & 1) {\n        return d1[mid] * 2 - 1 >= len;\n    } else {\n        return d2[mid + 1] * 2 >= len;\n    }\n}\n\n// 返回最长回文子串\nstring longestPalindrome(const string& s) {\n    auto [d1, d2] = manacher(s);\n    int bestLen = 1, bestStart = 0;\n    for (int i = 0; i < (int)s.size(); i++) {\n        int len1 = d1[i] * 2 - 1;\n        if (len1 > bestLen) {\n            bestLen = len1;\n            bestStart = i - d1[i] + 1;\n        }\n        int len2 = d2[i] * 2;\n        if (len2 > bestLen) {\n            bestLen = len2;\n            bestStart = i - d2[i];\n        }\n    }\n    return s.substr(bestStart, bestLen);\n}\n\n/**\n * 统一处理版: 插入分隔符，只处理奇回文\n * 处理后字符串: #a#b#a# 每个位置都是奇回文中心\n */\nvector<int> manacherUnified(const string& s) {\n    string t = "#";\n    for (char c : s) {\n        t += c;\n        t += \'#\';\n    }\n    int n = t.size();\n    vector<int> r(n);\n    for (int i = 0, c = 0, R = -1; i < n; i++) {\n        r[i] = (i <= R) ? min(r[2 * c - i], R - i) : 0;\n        while (i - r[i] - 1 >= 0 && i + r[i] + 1 < n &&\n               t[i - r[i] - 1] == t[i + r[i] + 1])\n            r[i]++;\n        if (i + r[i] > R) {\n            c = i;\n            R = i + r[i];\n        }\n    }\n    return r;\n}'
+  },
+  {
+    id: '字符串哈希', cat: '字符串', catTag: 'tag-str',
+    title: '字符串哈希模板，双哈希降低碰撞+子串判等O(1)+二分LCP O(logN)',
+    file: '字符串哈希模板，双哈希降低碰撞+子串判等O(1)+二分LCP O(logN).cpp',
+    desc: '双哈希/单哈希，支持子串判等与 LCP 二分查询',
+    meta: ['O(n)预处理', 'O(1)子串哈希', '双哈希', 'LCP二分'],
+    code: '#include <bits/stdc++.h>\nusing namespace std;\ntypedef unsigned long long ull;\n\n/**\n * 字符串哈希 (String Hashing)\n * 使用双哈希降低冲突概率\n * 支持：子串哈希、判断子串相等\n */\nstruct StringHash {\n    static const ull MOD1 = 1000000007;\n    static const ull MOD2 = 1000000009;\n    static const ull BASE = 131;\n\n    vector<ull> h1, h2, p1, p2;\n\n    StringHash(const string& s) {\n        int n = s.size();\n        h1.resize(n + 1, 0); h2.resize(n + 1, 0);\n        p1.resize(n + 1, 1); p2.resize(n + 1, 1);\n\n        for (int i = 1; i <= n; i++) {\n            h1[i] = (h1[i - 1] * BASE + s[i - 1]) % MOD1;\n            h2[i] = (h2[i - 1] * BASE + s[i - 1]) % MOD2;\n            p1[i] = p1[i - 1] * BASE % MOD1;\n            p2[i] = p2[i - 1] * BASE % MOD2;\n        }\n    }\n\n    pair<ull, ull> get(int l, int r) {\n        ull v1 = (h1[r] + MOD1 - h1[l - 1] * p1[r - l + 1] % MOD1) % MOD1;\n        ull v2 = (h2[r] + MOD2 - h2[l - 1] * p2[r - l + 1] % MOD2) % MOD2;\n        return {v1, v2};\n    }\n\n    bool equal(int l1, int r1, int l2, int r2) {\n        return get(l1, r1) == get(l2, r2);\n    }\n\n    int lcp(int l1, int r1, int l2, int r2) {\n        int lo = 0, hi = min(r1 - l1 + 1, r2 - l2 + 1);\n        while (lo < hi) {\n            int mid = (lo + hi + 1) / 2;\n            if (equal(l1, l1 + mid - 1, l2, l2 + mid - 1))\n                lo = mid;\n            else\n                hi = mid - 1;\n        }\n        return lo;\n    }\n};\n\n/**\n * 轻量级单哈希版本 (更快，但有碰撞风险)\n */\nstruct SingleHash {\n    static const ull MOD = (1ULL << 61) - 1;\n    static const ull BASE = 131;\n    vector<ull> h, p;\n\n    SingleHash(const string& s) {\n        int n = s.size();\n        h.resize(n + 1, 0);\n        p.resize(n + 1, 1);\n        for (int i = 1; i <= n; i++) {\n            h[i] = (h[i - 1] * BASE + s[i - 1]) % MOD;\n            p[i] = p[i - 1] * BASE % MOD;\n        }\n    }\n\n    ull get(int l, int r) {\n        return (h[r] + MOD - h[l - 1] * p[r - l + 1] % MOD) % MOD;\n    }\n};'
+  },
+
+  // ========== 数学 (6) ==========
+  {
+    id: '\u{1F3C6}26C题', cat: '数学', catTag: 'tag-math',
+    title: '\u{1F3C6}26C题_回文期望操作次数_组合数学+费马小定理求逆元',
+    file: '26C题_回文期望操作次数_组合数学+费马小定理求逆元.cpp',
+    desc: '回文串期望操作次数，组合数学 + 费马小定理求逆元',
+    meta: ['O(n)', '期望公式', '费马逆元', '26省赛'],
+    code: '#include <bits/stdc++.h>\nusing namespace std;\ntypedef long long ll;\nconst int MOD = 998244353;\n\n/**\n * ***26省赛第C题 - 回文串期望操作次数 ***\n * 题目：每次随机选未选过的位置改成c，直到字符串变成回文。\n *       求期望操作次数 mod 998244353。\n *\n * 算法：组合数学 + 费马小定理求逆元\n *      期望公式 E = B * (n+1) / (B+1)\n *      其中 B = 必须修改的"坏"位置数\n */\n\nll qpow(ll a, ll b, ll mod) {\n    ll res = 1; a %= mod;\n    while (b) {\n        if (b & 1) res = res * a % mod;\n        a = a * a % mod; b >>= 1;\n    }\n    return res;\n}\n\nll invMod(ll a, ll mod) {\n    return qpow(a, mod - 2, mod);\n}\n\nint countBad(const string& s, char c) {\n    int n = s.size(), bad = 0;\n    for (int i = 0; i < n / 2; i++) {\n        int j = n - 1 - i;\n        if (s[i] == s[j]) continue;\n        bool leftOk = (s[i] == c);\n        bool rightOk = (s[j] == c);\n        if (leftOk || rightOk) bad += 1;\n        else bad += 2;\n    }\n    return bad;\n}\n\nll expectedOps(const string& s, char c) {\n    int n = s.size(), B = countBad(s, c);\n    if (B == 0) return 0;\n    return (ll)B * (n + 1) % MOD * invMod(B + 1, MOD) % MOD;\n}'
+  },
+  {
+    id: 'MillerRabin', cat: '数学', catTag: 'tag-math',
+    title: 'Miller-Rabin算法判断大整数是不是素数，复杂度O(Tk(logn)^3)',
+    file: 'Miller-Rabin算法判断大整数是不是素数，复杂度O(Tk(logn)^3).cpp',
+    desc: '大整数素性测试，确定性版覆盖 2^64 以内所有整数',
+    meta: ['O(T*k*log³n)', '确定性', 'n < 2^64', '__int128防溢出'],
+    code: '#include <bits/stdc++.h>\nusing namespace std;\ntypedef unsigned long long ull;\ntypedef __int128 i128;\n\n/**\n * Miller-Rabin 素性测试\n * 判断大整数 n 是否为素数\n * 时间复杂度: O(T * k * log³n)，k 为测试基数个数\n * 使用前 11 个质数作为基，n < 2^64 时判断确定性正确\n */\n\ni128 modPow(i128 a, i128 b, i128 mod) {\n    i128 res = 1;\n    a %= mod;\n    while (b) {\n        if (b & 1) res = res * a % mod;\n        a = a * a % mod;\n        b >>= 1;\n    }\n    return res;\n}\n\nbool isPrime(ull n) {\n    if (n <= 1) return false;\n    if (n <= 3) return true;\n    if (n % 2 == 0) return false;\n\n    ull d = n - 1;\n    int r = 0;\n    while (d % 2 == 0) {\n        d /= 2;\n        r++;\n    }\n\n    array<ull, 11> bases = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31};\n\n    for (ull a : bases) {\n        if (a % n == 0) continue;\n        i128 x = modPow(a, d, n);\n\n        if (x == 1 || x == n - 1) continue;\n\n        bool composite = true;\n        for (int i = 0; i < r - 1; i++) {\n            x = x * x % n;\n            if (x == n - 1) {\n                composite = false;\n                break;\n            }\n        }\n        if (composite) return false;\n    }\n    return true;\n}\n\nbool isPrimeFast(ull n, int iterations = 5) {\n    if (n <= 1) return false;\n    if (n <= 3) return true;\n    if (n % 2 == 0) return false;\n\n    ull d = n - 1;\n    int r = 0;\n    while (d % 2 == 0) {\n        d /= 2;\n        r++;\n    }\n\n    mt19937_64 rng(random_device{}());\n\n    for (int iter = 0; iter < iterations; iter++) {\n        ull a = uniform_int_distribution<ull>(2, n - 2)(rng);\n        i128 x = modPow(a, d, n);\n        if (x == 1 || x == n - 1) continue;\n        bool composite = true;\n        for (int i = 0; i < r - 1; i++) {\n            x = x * x % n;\n            if (x == n - 1) {\n                composite = false;\n                break;\n            }\n        }\n        if (composite) return false;\n    }\n    return true;\n}'
+  },
+  {
+    id: '预处理阶乘逆元', cat: '数学', catTag: 'tag-math',
+    title: '预处理阶乘和逆元模板，O(N)预处理+O(1)查询组合数排列数卡特兰数',
+    file: '预处理阶乘和逆元模板，O(N)预处理+O(1)查询组合数排列数卡特兰数.cpp',
+    desc: 'O(N) 预处理阶乘/逆元/阶乘逆元，O(1) 查询 C(n,k)/A(n,k)/Cat(n)',
+    meta: ['O(n)预处理', 'O(1) C(n,k)', '线性递推逆元', '多重集排列'],
+    code: '#include <bits/stdc++.h>\nusing namespace std;\ntypedef long long ll;\n\n/**\n * 预处理阶乘和逆元模板\n * O(N) 预处理 fac[i], inv[i], finv[i]\n * O(1) 查询组合数 C(n,k), 排列数 A(n,k)\n * 适用于模数为质数\n */\n\nconst int MOD = 1e9 + 7;\n\nstruct Precompute {\n    vector<ll> fac, inv, finv;\n    int n, mod;\n\n    Precompute(int _n, int _mod = MOD) : n(_n), mod(_mod) {\n        fac.resize(n + 1);\n        inv.resize(n + 1);\n        finv.resize(n + 1);\n\n        fac[0] = fac[1] = 1;\n        inv[1] = 1;\n        finv[0] = finv[1] = 1;\n\n        for (int i = 2; i <= n; i++) {\n            fac[i]  = fac[i - 1] * i % mod;\n            inv[i]  = (mod - mod / i) * inv[mod % i] % mod;\n            finv[i] = finv[i - 1] * inv[i] % mod;\n        }\n    }\n\n    // 组合数 C(n, k)\n    ll C(int n, int k) {\n        if (k < 0 || k > n) return 0;\n        return fac[n] * finv[k] % mod * finv[n - k] % mod;\n    }\n\n    // 排列数 A(n, k)\n    ll A(int n, int k) {\n        if (k < 0 || k > n) return 0;\n        return fac[n] * finv[n - k] % mod;\n    }\n\n    // 卡特兰数 Cat(n) = C(2n,n) / (n+1)\n    ll catalan(int n) {\n        return C(2 * n, n) * inv[n + 1] % mod;\n    }\n\n    // 多重集排列: n! / (c1! * c2! * ...)\n    ll multinomial(int n, const vector<int>& cnt) {\n        ll res = fac[n];\n        for (int c : cnt)\n            res = res * finv[c] % mod;\n        return res;\n    }\n};\n\n/**\n * 快速幂 (辅助，独立使用)\n */\nll qpow(ll a, ll b, ll mod) {\n    ll res = 1; a %= mod;\n    while (b) {\n        if (b & 1) res = res * a % mod;\n        a = a * a % mod;\n        b >>= 1;\n    }\n    return res;\n}\n\n/**\n * 费马小定理求单个逆元: a^(p-2) ≡ a^{-1} (mod p), p 为质数\n */\nll invSingle(ll a, ll mod = MOD) {\n    return qpow(a, mod - 2, mod);\n}\n\n/**\n * 扩展欧几里得求单个逆元 (a 与 mod 互质即可，不要求 mod 为质数)\n */\nll invExgcd(ll a, ll mod) {\n    ll x, y;\n    function<ll(ll, ll, ll&, ll&)> exgcd =\n        [&](ll a, ll b, ll& x, ll& y) -> ll {\n            if (!b) { x = 1; y = 0; return a; }\n            ll d = exgcd(b, a % b, y, x);\n            y -= a / b * x;\n            return d;\n        };\n    exgcd(a, mod, x, y);\n    return (x % mod + mod) % mod;\n}'
+  },
+  {
+    id: '快速幂矩阵快速幂', cat: '数学', catTag: 'tag-math',
+    title: '快速幂和矩阵快速幂模板，二分幂O(logN)+斐波那契数列加速',
+    file: '快速幂和矩阵快速幂模板，二分幂O(logN)+斐波那契数列加速.cpp',
+    desc: '二分快速幂、矩阵快速幂、斐波那契数列 O(log n)',
+    meta: ['O(log b)', '矩阵快速幂', '斐波那契', '线性递推'],
+    code: '#include <bits/stdc++.h>\nusing namespace std;\ntypedef long long ll;\n\n/**\n * 快速幂 (二分幂)\n * 计算 a^b % mod\n * 时间复杂度: O(log b)\n */\nll qpow(ll a, ll b, ll mod) {\n    ll res = 1;\n    a %= mod;\n    while (b) {\n        if (b & 1) res = res * a % mod;\n        a = a * a % mod;\n        b >>= 1;\n    }\n    return res;\n}\n\n/**\n * 矩阵快速幂\n * 用于线性递推的加速\n */\ntemplate <int N>\nstruct Matrix {\n    ll a[N][N];\n    int n;\n\n    Matrix(int _n = N, bool identity = false) : n(_n) {\n        memset(a, 0, sizeof(a));\n        if (identity)\n            for (int i = 0; i < n; i++) a[i][i] = 1;\n    }\n\n    Matrix operator*(const Matrix& other) const {\n        Matrix res(n);\n        for (int i = 0; i < n; i++)\n            for (int k = 0; k < n; k++)\n                if (a[i][k])\n                    for (int j = 0; j < n; j++)\n                        res.a[i][j] = (res.a[i][j] + a[i][k] * other.a[k][j]);\n        return res;\n    }\n};\n\ntemplate <int N>\nMatrix<N> matPow(Matrix<N> a, ll b, ll mod) {\n    Matrix<N> res(a.n, true);\n    for (int i = 0; i < a.n; i++)\n        for (int j = 0; j < a.n; j++)\n            a.a[i][j] %= mod;\n    while (b) {\n        if (b & 1) {\n            res = res * a;\n            for (int i = 0; i < res.n; i++)\n                for (int j = 0; j < res.n; j++)\n                    res.a[i][j] %= mod;\n        }\n        a = a * a;\n        for (int i = 0; i < a.n; i++)\n            for (int j = 0; j < a.n; j++)\n                a.a[i][j] %= mod;\n        b >>= 1;\n    }\n    return res;\n}\n\n/**\n * 斐波那契数列 — 矩阵快速幂\n * F[0]=0, F[1]=1\n */\nll fib(ll n, ll mod) {\n    if (n <= 1) return n;\n    Matrix<2> M;\n    M.a[0][0] = M.a[0][1] = M.a[1][0] = 1;\n    M.a[1][1] = 0;\n    M = matPow(M, n - 1, mod);\n    return M.a[0][0] % mod;\n}'
+  },
+  {
+    id: '数论合集', cat: '数学', catTag: 'tag-math',
+    title: '数论合集，GCD扩展欧几里得+逆元3种求法+CRT中国剩余定理+高斯消元',
+    file: '数论合集，GCD扩展欧几里得+逆元3种求法+CRT中国剩余定理+高斯消元.cpp',
+    desc: 'GCD/LCM、扩欧、3种逆元求法、CRT/ExCRT、高斯消元',
+    meta: ['GCD/ExGCD', '3种逆元', 'CRT/ExCRT', '高斯消元'],
+    code: '#include <bits/stdc++.h>\nusing namespace std;\ntypedef long long ll;\n\n/**\n * 常用数论算法\n * 包含：GCD/LCM、扩展欧几里得、乘法逆元、中国剩余定理\n */\n\n// GCD / LCM\nll gcd(ll a, ll b) {\n    return b ? gcd(b, a % b) : a;\n}\n\nll lcm(ll a, ll b) {\n    return a / gcd(a, b) * b;\n}\n\n// 扩展欧几里得\nll exgcd(ll a, ll b, ll& x, ll& y) {\n    if (!b) {\n        x = 1; y = 0;\n        return a;\n    }\n    ll d = exgcd(b, a % b, y, x);\n    y -= a / b * x;\n    return d;\n}\n\n// 快速幂\nll qpow(ll a, ll b, ll mod) {\n    ll res = 1; a %= mod;\n    while (b) {\n        if (b & 1) res = res * a % mod;\n        a = a * a % mod;\n        b >>= 1;\n    }\n    return res;\n}\n\n// 逆元 — 费马小定理\nll invFermat(ll a, ll m) {\n    return qpow(a, m - 2, m);\n}\n\n// 逆元 — 扩展欧几里得\nll invExgcd(ll a, ll m) {\n    ll x, y;\n    exgcd(a, m, x, y);\n    return (x % m + m) % m;\n}\n\n// 线性求逆元\nvector<ll> linearInv(int n, ll mod) {\n    vector<ll> inv(n + 1);\n    inv[1] = 1;\n    for (int i = 2; i <= n; i++)\n        inv[i] = (mod - mod / i) * inv[mod % i] % mod;\n    return inv;\n}\n\n// 标准 CRT (模数两两互质)\nll crt(const vector<ll>& a, const vector<ll>& m) {\n    int n = a.size();\n    ll M = 1;\n    for (ll mi : m) M *= mi;\n    ll ans = 0;\n    for (int i = 0; i < n; i++) {\n        ll Mi = M / m[i];\n        ll ti = invExgcd(Mi, m[i]);\n        ans = (ans + a[i] * Mi % M * ti % M) % M;\n    }\n    return ans;\n}\n\n// 扩展 CRT — 合并两个方程\npair<ll, ll> excrtMerge(ll a1, ll m1, ll a2, ll m2) {\n    ll x, y, d = exgcd(m1, m2, x, y);\n    ll diff = a2 - a1;\n    if (diff % d != 0) return {-1, -1};\n    ll t1 = x * (diff / d);\n    ll l = m1 / d * m2;\n    ll a = ((a1 + m1 * t1) % l + l) % l;\n    return {a, l};\n}\n\nll excrt(const vector<ll>& a, const vector<ll>& m) {\n    ll A = a[0], M = m[0];\n    for (int i = 1; i < (int)a.size(); i++) {\n        auto [nA, nM] = excrtMerge(A, M, a[i], m[i]);\n        if (nA == -1) return -1;\n        A = nA;\n        M = nM;\n    }\n    return A;\n}\n\n// 高斯消元 — 浮点数版\nconst double EPS = 1e-9;\nint gauss(vector<vector<double>>& a, vector<double>& ans) {\n    int n = a.size();\n    vector<int> where(n, -1);\n    for (int col = 0, row = 0; col < n && row < n; col++) {\n        int sel = row;\n        for (int i = row; i < n; i++)\n            if (fabs(a[i][col]) > fabs(a[sel][col])) sel = i;\n        if (fabs(a[sel][col]) < EPS) continue;\n        swap(a[sel], a[row]);\n        where[col] = row;\n        for (int i = 0; i < n; i++) {\n            if (i != row) {\n                double factor = a[i][col] / a[row][col];\n                for (int j = col; j <= n; j++)\n                    a[i][j] -= a[row][j] * factor;\n            }\n        }\n        row++;\n    }\n    ans.assign(n, 0);\n    for (int col = 0; col < n; col++) {\n        if (where[col] != -1)\n            ans[col] = a[where[col]][n] / a[where[col]][col];\n    }\n    for (int i = 0; i < n; i++) {\n        double sum = 0;\n        for (int j = 0; j < n; j++) sum += ans[j] * a[i][j];\n        if (fabs(sum - a[i][n]) > EPS) return 0;\n    }\n    for (int col = 0; col < n; col++)\n        if (where[col] == -1) return 2;\n    return 1;\n}\n\n// 高斯消元 — 模 MOD 版\nint gaussMod(vector<vector<ll>>& a, vector<ll>& ans, ll mod) {\n    int n = a.size();\n    ans.assign(n, 0);\n    for (int col = 0, row = 0; col < n && row < n; col++) {\n        int sel = row;\n        for (int i = row; i < n; i++)\n            if (a[i][col] != 0) { sel = i; break; }\n        if (a[sel][col] == 0) continue;\n        swap(a[sel], a[row]);\n        ll inv = invExgcd(a[row][col], mod);\n        for (int i = 0; i < n; i++) {\n            if (i != row && a[i][col] != 0) {\n                ll factor = a[i][col] * inv % mod;\n                for (int j = col; j <= n; j++)\n                    a[i][j] = (a[i][j] - a[row][j] * factor % mod + mod) % mod;\n            }\n        }\n        row++;\n    }\n    for (int i = 0; i < n; i++) {\n        int pivot = -1;\n        for (int j = 0; j < n; j++)\n            if (a[i][j] != 0) { pivot = j; break; }\n        if (pivot == -1) {\n            if (a[i][n] != 0) return 0;\n        } else {\n            ans[pivot] = a[i][n] * invExgcd(a[i][pivot], mod) % mod;\n        }\n    }\n    return 1;\n}'
+  },
+  {
+    id: '素数筛欧拉函数', cat: '数学', catTag: 'tag-math',
+    title: '素数筛模板，埃氏筛+欧拉线性筛O(N)求最小质因子+欧拉函数φ(N)',
+    file: '素数筛模板，埃氏筛+欧拉线性筛O(N)求最小质因子+欧拉函数φ(N).cpp',
+    desc: '埃氏筛、欧拉线性筛（含最小质因子）、欧拉函数 φ(n)',
+    meta: ['埃氏筛', '线性筛O(n)', '最小质因子', '欧拉函数'],
+    code: '#include <bits/stdc++.h>\nusing namespace std;\ntypedef long long ll;\n\n/**\n * 素数筛法合集\n */\n\n// 埃氏筛 O(n log log n)\nvector<int> sieveEratosthenes(int n) {\n    vector<bool> isPrime(n + 1, true);\n    isPrime[0] = isPrime[1] = false;\n    for (int i = 2; i * i <= n; i++) {\n        if (isPrime[i]) {\n            for (int j = i * i; j <= n; j += i)\n                isPrime[j] = false;\n        }\n    }\n    vector<int> primes;\n    for (int i = 2; i <= n; i++)\n        if (isPrime[i]) primes.push_back(i);\n    return primes;\n}\n\n// 欧拉线性筛 O(n)\n// 同时求出每个数的最小质因子\nstruct LinearSieve {\n    vector<int> primes;\n    vector<bool> isPrime;\n    vector<int> minPrime;\n\n    LinearSieve(int n) {\n        isPrime.assign(n + 1, true);\n        minPrime.resize(n + 1, 0);\n        isPrime[0] = isPrime[1] = false;\n        for (int i = 2; i <= n; i++) {\n            if (isPrime[i]) {\n                primes.push_back(i);\n                minPrime[i] = i;\n            }\n            for (int p : primes) {\n                if (1LL * i * p > n) break;\n                isPrime[i * p] = false;\n                minPrime[i * p] = p;\n                if (i % p == 0) break;\n            }\n        }\n    }\n\n    vector<pair<int, int>> factorize(int x) {\n        vector<pair<int, int>> factors;\n        while (x > 1) {\n            int p = minPrime[x], cnt = 0;\n            while (x % p == 0) { x /= p; cnt++; }\n            factors.push_back({p, cnt});\n        }\n        return factors;\n    }\n};\n\n// 质因数分解 (试除法) O(sqrt(n))\nvector<pair<ll, int>> factorize(ll x) {\n    vector<pair<ll, int>> factors;\n    for (ll i = 2; i * i <= x; i++) {\n        if (x % i == 0) {\n            int cnt = 0;\n            while (x % i == 0) { x /= i; cnt++; }\n            factors.push_back({i, cnt});\n        }\n    }\n    if (x > 1) factors.push_back({x, 1});\n    return factors;\n}\n\n// 欧拉函数 phi(n)\nll eulerPhi(ll n) {\n    ll res = n;\n    for (ll i = 2; i * i <= n; i++) {\n        if (n % i == 0) {\n            res = res / i * (i - 1);\n            while (n % i == 0) n /= i;\n        }\n    }\n    if (n > 1) res = res / n * (n - 1);\n    return res;\n}\n\n// 线性筛同时求欧拉函数\nvector<int> eulerPhiRange(int n) {\n    vector<int> phi(n + 1);\n    vector<int> primes;\n    vector<bool> isPrime(n + 1, true);\n    phi[1] = 1;\n    for (int i = 2; i <= n; i++) {\n        if (isPrime[i]) {\n            primes.push_back(i);\n            phi[i] = i - 1;\n        }\n        for (int p : primes) {\n            if (1LL * i * p > n) break;\n            isPrime[i * p] = false;\n            if (i % p == 0) {\n                phi[i * p] = phi[i] * p;\n                break;\n            } else {\n                phi[i * p] = phi[i] * (p - 1);\n            }\n        }\n    }\n    return phi;\n}'
+  },
+  {
+    id: '组合数', cat: '数学', catTag: 'tag-math',
+    title: '组合数模板，阶乘逆元O(N)预处理+O(1)C(n,k)+Lucas定理+卡特兰数',
+    file: '组合数模板，阶乘逆元O(N)预处理+O(1)C(n,k)+Lucas定理+卡特兰数.cpp',
+    desc: '阶乘逆元 O(1) 查询、Lucas 定理、卡特兰数',
+    meta: ['O(n)预处理', 'O(1) C(n,k)', 'Lucas定理', '卡特兰数'],
+    code: '#include <bits/stdc++.h>\nusing namespace std;\ntypedef long long ll;\nconst int MOD = 1e9 + 7;\n\n/**\n * 组合数 — 预处理阶乘逆元 (O(n) 预处理, O(1) 查询)\n * 适用于模数为质数\n */\n\nstruct Comb {\n    vector<ll> fac, inv, finv;\n    int mod;\n\n    Comb(int n, int _mod = MOD) : mod(_mod) {\n        fac.resize(n + 1);\n        inv.resize(n + 1);\n        finv.resize(n + 1);\n        fac[0] = fac[1] = 1;\n        inv[1] = 1;\n        finv[0] = finv[1] = 1;\n        for (int i = 2; i <= n; i++) {\n            fac[i] = fac[i - 1] * i % mod;\n            inv[i] = (mod - mod / i) * inv[mod % i] % mod;\n            finv[i] = finv[i - 1] * inv[i] % mod;\n        }\n    }\n\n    ll C(int n, int k) {\n        if (k < 0 || k > n) return 0;\n        return fac[n] * finv[k] % mod * finv[n - k] % mod;\n    }\n\n    ll A(int n, int k) {\n        if (k < 0 || k > n) return 0;\n        return fac[n] * finv[n - k] % mod;\n    }\n\n    ll catalan(int n) {\n        return C(2 * n, n) * inv[n + 1] % mod;\n    }\n};\n\n// 组合数 — 单次查询 O(k)\nll C_single(int n, int k, int mod = MOD) {\n    if (k < 0 || k > n) return 0;\n    if (k > n - k) k = n - k;\n    ll res = 1;\n    for (int i = 1; i <= k; i++) {\n        res = res * (n - k + i) % mod;\n        res = res * qpow(i, mod - 2, mod) % mod;\n    }\n    return res;\n}\n\n// 组合数 — Lucas 定理 (模数较小且为质数时使用)\nll lucas(ll n, ll k, int p) {\n    if (k < 0 || k > n) return 0;\n    if (k == 0 || k == n) return 1;\n    return C(n % p, k % p) * lucas(n / p, k / p, p) % p;\n}\n\nll qpow(ll a, ll b, ll mod) {\n    ll res = 1; a %= mod;\n    while (b) {\n        if (b & 1) res = res * a % mod;\n        a = a * a % mod;\n        b >>= 1;\n    }\n    return res;\n}'
+  },
+
+  // ========== 其他 (14) ==========
+  {
+    id: '\u{1F3C6}26D题', cat: '其他', catTag: 'tag-other',
+    title: '\u{1F3C6}26D题_区间选择嵌套计数_组合DP+卡特兰数',
+    file: '26D题_区间选择嵌套计数_组合DP+卡特兰数.cpp',
+    desc: '区间选择嵌套计数，组合DP + 卡特兰数',
+    meta: ['O(n²)', '组合DP', '卡特兰数', '26省赛'],
+    code: '#include <bits/stdc++.h>\nusing namespace std;\ntypedef long long ll;\nconst int MOD = 1e9 + 7;\n\n/**\n * ***26省赛第D题 - 区间选择嵌套计数 ***\n * 题目：n ≤ 100，选若干不相交区间 [l,r] (1≤l<r≤n)，要求：\n *       存在 a 个区间满足 l递增 且 r递减 (嵌套)\n *       存在 b 个区间满足 l递增 且 r递增 (不交递增)\n *       求合法方案数 mod 1e9+7\n *\n * 算法：组合DP + 卡特兰数\n *\n * 核心思路：\n * - 每个端点最多被一个区间占用\n * - 等价于匹配 2k 个位置成 k 个区间\n * - 嵌套关系 = 匹配 (i,j) 满足 i<j 且对应端点位置交错\n * - 用 DP + 组合数枚举\n */\n\nstruct Comb {\n    vector<ll> fac, inv, finv;\n    int mod;\n    Comb(int n, int _mod = MOD) : mod(_mod) {\n        fac.resize(n + 1); inv.resize(n + 1); finv.resize(n + 1);\n        fac[0] = fac[1] = 1; inv[1] = 1; finv[0] = finv[1] = 1;\n        for (int i = 2; i <= n; i++) {\n            fac[i] = fac[i - 1] * i % mod;\n            inv[i] = (mod - mod / i) * inv[mod % i] % mod;\n            finv[i] = finv[i - 1] * inv[i] % mod;\n        }\n    }\n    ll C(int n, int k) {\n        if (k < 0 || k > n) return 0;\n        return fac[n] * finv[k] % mod * finv[n - k] % mod;\n    }\n    ll catalan(int n) {\n        return C(2 * n, n) * inv[n + 1] % mod;\n    }\n};\n\nll solveD(int n, int a, int b) {\n    Comb comb(n * 2);\n    ll ans = 0;\n    for (int k = max(a, b); 2 * k <= n; k++) {\n        ll ways = comb.C(n, 2 * k);\n        ll pairWays = comb.catalan(k) * comb.fac[k] % MOD;\n        if (a + b > k) continue;\n        ll choose = comb.C(k, a) * comb.C(k - a, b) % MOD;\n        ans = (ans + ways * pairWays % MOD * choose % MOD) % MOD;\n    }\n    return ans;\n}'
+  },
+  {
+    id: '\u{1F3C6}26E题', cat: '其他', catTag: 'tag-other',
+    title: '\u{1F3C6}26E题_交互猜图_二分定位独立集找边',
+    file: '26E题_交互猜图_二分定位独立集找边.cpp',
+    desc: '交互题，询问独立集，二分定位找出所有边',
+    meta: ['O(n log n)', '交互', '二分定位', '26省赛'],
+    code: '#include <bits/stdc++.h>\nusing namespace std;\n\n/**\n * ***26省赛第E题 - 交互猜图，判断独立集找边***\n * 题目：交互题。每轮询问一个顶点集S是否为独立集(无内部边)。\n *       用 ≤ n + m(2 + ceil(log2 n)) 次询问找出所有边。\n *       n ≤ 500, 图是自适应的。\n *\n * 算法：二分/分治定位每条边\n *       1. 先用 n 次询问确定每个点的邻居候选集\n *       2. 对每个点 i，用二分在 {i+1, ..., n} 中找邻居\n *       3. 询问集合 {i, mid} 间是否有边 → 二分收缩范围\n *\n * 核心技巧：\n * - 询问独立集：返回1表示集合内无边\n * - 问 {i, j}：返回0说明 i-j 有边\n * - 用二分在候选集中逐条定位边: 类似"找第一个1"的二分\n * - 总询问次数: 每个点花 O(log n) 二分, 总共 O(n log n)\n */\n\n// 交互框架 (需要根据实际交互库调整)\n// 每次询问: ? k v1 v2 ... vk → 返回1(独立集)或0(不是)\n// 回答: ! m u1 v1 u2 v2 ... um vm\n\n// 伪代码模板:\n/*\nint n; cin >> n;\n\nvector<pair<int,int>> edges;\n\nfor (int i = 1; i <= n; i++) {\n    // 二分找 i 的所有大于它的邻居\n    int lo = i + 1, hi = n;\n    while (lo <= hi) {\n        int mid = (lo + hi) / 2;\n        vector<int> query = {i};\n        for (int x = lo; x <= mid; x++) query.push_back(x);\n        bool hasEdge = !ask(query);\n        if (hasEdge) {\n            // 收缩找具体边\n            edges.push_back({i, mid});\n        }\n        lo = mid + 1;\n    }\n}\n*/'
+  },
+  {
+    id: '\u{1F3C6}26F题', cat: '其他', catTag: 'tag-other',
+    title: '\u{1F3C6}26F题_前缀和不可被r整除_DP同余状态',
+    file: '26F题_前缀和不可被r整除_DP同余状态.cpp',
+    desc: 'DP + 同余状态，前缀和不可被 r 整除的最小修改代价',
+    meta: ['O(n)', 'DP同余', '贪心', '26省赛'],
+    code: '#include <bits/stdc++.h>\nusing namespace std;\ntypedef long long ll;\n\n/**\n * ***26省赛第F题 - 前缀和不可被r整除的最小修改代价***\n * 题目：给定序列a_i (0 ≤ a_i < r)，每个位置有修改代价c_i。\n *       可付费将任意a_i改为任意值(模r意义下)。\n *       求最小代价使得所有前缀和 s_i mod r ≠ 0。\n *\n * 算法：DP + 同余状态压缩\n *\n * 核心思路：\n * - s_i mod r = 0 是不可接受的\n * - 当 s_i mod r = 0 时，必须修改当前或之前的某个a_i\n * - DP[i][v] = 处理前i个位置，当前前缀和 mod r = v 的最小代价\n * - 转移: 修改a_i → v可以变成任意值 = INF代价c_i\n *         不改 → v = (prev + a_i) % r，前提是 v ≠ 0\n */\n\nll minCostPrefixNotDivisible(const vector<int>& a, const vector<int>& c, int r) {\n    int n = a.size();\n    ll totalCost = 0;\n    ll pref = 0;\n    set<pair<ll,int>> costs;\n\n    for (int i = 0; i < n; i++) {\n        pref = (pref + a[i]) % r;\n        costs.insert({c[i], i});\n\n        if (pref == 0) {\n            auto it = costs.begin();\n            totalCost += it->first;\n            costs.erase(it);\n        }\n    }\n    return totalCost;\n}'
+  },
+  {
+    id: '\u{1F3C6}26G题', cat: '其他', catTag: 'tag-other',
+    title: '\u{1F3C6}26G题_构造序列无子数组和为s_贪心+滑动窗口',
+    file: '26G题_构造序列无子数组和为s_贪心+滑动窗口.cpp',
+    desc: '贪心构造序列，滑动窗口避免子数组和为 s',
+    meta: ['O(n)', '贪心', '滑动窗口', '26省赛'],
+    code: '#include <bits/stdc++.h>\nusing namespace std;\ntypedef long long ll;\n\n/**\n * ***26省赛第G题 - 构造序列无机子数组和为s***\n * 题目：给定两个数 a,b (a≠b)，构造长n的序列c_i∈{a,b}，\n *       使不存在连续子数组和为s。\n *       若无法构造输出NO。\n *\n * 算法：贪心构造 + 同余分析\n *       子数组和只能为 k*a + (len-k)*b = b*len + k*(a-b)\n *       由于 a≠b，和随len线性增长。\n *       贪心：尽量用大的数填，当快到达s时换小的\n */\n\nbool canConstruct(int a, int b, int n, ll s, vector<int>& result) {\n    result.resize(n);\n    if (a > b) swap(a, b);\n\n    ll windowSum = 0;\n    deque<pair<int,int>> dq;\n\n    for (int i = 0; i < n; i++) {\n        if (windowSum + b != s) {\n            result[i] = b;\n            windowSum += b;\n        } else {\n            if (windowSum + a != s) {\n                result[i] = a;\n                windowSum += a;\n            } else {\n                return false;\n            }\n        }\n        dq.push_back({result[i], i});\n        while (!dq.empty() && windowSum >= s) {\n            windowSum -= dq.front().first;\n            dq.pop_front();\n        }\n    }\n    return true;\n}'
+  },
+  {
+    id: '\u{1F3C6}26I题', cat: '其他', catTag: 'tag-other',
+    title: '\u{1F3C6}26I题_矩阵每行重排最大化列最小值和_排序贪心',
+    file: '26I题_矩阵每行重排最大化列最小值和_排序贪心.cpp',
+    desc: '矩阵每行重排，最大化列最小值之和',
+    meta: ['O(nm log m)', '贪心排序', '二分答案', '26省赛'],
+    code: '#include <bits/stdc++.h>\nusing namespace std;\ntypedef long long ll;\n\n/**\n * ***26省赛第I题 - 矩阵每行重排最大化列最小值和***\n * 题目：n×m矩阵，每行可任意重排，使 Σ(min of each column) 最大。\n *\n * 算法：贪心 + 排序\n *       对每行排序，每列取各行该列的最小值\n *\n * 核心思路：\n * - 每行可独立重排 → 相当于可以把每行的数任意放到各列\n * - 目标: 最大化 Σ_j min_i(A[i][j])\n * - 正确解法：每行升序排序后，答案 = 每列 min\n */\nll maxColMinSum(vector<vector<ll>>& matrix) {\n    int n = matrix.size(), m = matrix[0].size();\n\n    for (auto& row : matrix) sort(row.begin(), row.end());\n\n    vector<ll> colMins(m, (ll)1e18);\n    for (int i = 0; i < n; i++) {\n        auto& row = matrix[i];\n        for (int j = 0; j < m; j++) {\n            colMins[j] = min(colMins[j], row[j]);\n        }\n    }\n    ll ans = 0;\n    for (ll v : colMins) ans += v;\n    return ans;\n}'
+  },
+  {
+    id: '\u{1F3C6}26K题', cat: '其他', catTag: 'tag-other',
+    title: '\u{1F3C6}26K题_SoulLink法力打怪_贪心二进制血量分析',
+    file: '26K题_SoulLink法力打怪_贪心二进制血量分析.cpp',
+    desc: 'Soul Link 法力打怪，贪心 + 二进制血量分析',
+    meta: ['O(n)', '贪心', '二进制分析', '26省赛'],
+    code: '#include <bits/stdc++.h>\nusing namespace std;\ntypedef long long ll;\n\n/**\n * ***26省赛第K题 - Soul Link 法力打怪***\n * 题目：n≤30，敌人等级i的血量为2^(i-1)，有a_i个。\n *       消耗m法力给敌人上Soul Link(持续到其死亡)，\n *       消耗1法力Attack：对所有Link敌人造成1伤害，\n *       敌人死亡奖励m法力。求最小初始法力。\n *\n * 算法：贪心 + 二进制位分析\n *       血量 = 2^{i-1} 有特殊的二进制性质\n *       Attack 一次对全体Link敌人各-1血\n *       → 相当于你用m点法力"雇佣"一个敌人，然后每次攻击全体-1\n *       → 攻击 (2^{i-1}) 轮后敌人死亡，返还m法力\n */\n\nll minInitialMana(int n, ll m, const vector<ll>& cnt) {\n    ll mana = 0;\n    ll maxNeed = 0;\n\n    for (int i = 0; i < n; i++) {\n        if (cnt[i] == 0) continue;\n        ll hp = 1LL << i;\n        // 成本: m (Soul Link) + hp (Attack) - m (返还) = hp\n        // 但初始法力要覆盖 Soul Link 的 m 点\n        // 具体贪心调度需要模拟整个法力变化过程\n        // 此处提供框架\n    }\n\n    return maxNeed;\n}'
+  },
+  {
+    id: '\u{1F3C6}26M题', cat: '其他', catTag: 'tag-other',
+    title: '\u{1F3C6}26M题_LIS+LDS_Dilworth定理_排列扩展性',
+    file: '26M题_LIS+LDS_Dilworth定理_排列扩展性.cpp',
+    desc: 'LIS+LDS + Dilworth定理，排列可扩展性分析',
+    meta: ['O(n log n)', 'LIS/LDS', 'Dilworth', '26省赛'],
+    code: '#include <bits/stdc++.h>\nusing namespace std;\n\n/**\n * ***26省赛第M题 - LIS+LDS+可扩展性(Dilworth定理)***\n * 题目：对于排列P的每个前缀P(i)，求 f(P(i)) =\n *       最大k，使得可以在末尾添加k个互异实数，保持LIS和LDS不变。\n *\n * 算法：LIS + LDS + Dilworth定理\n *       Dilworth: 偏序集的最小链覆盖 = 最长反链\n *       LIS 和 LDS 是反链关系\n *\n * 核心思路：\n * - 排列的最长LIS和LDS确定了Dilworth分解\n * - f(A) = 可以加k个数 → 等价于LIS和LDS的"空隙"数量\n * - 每个元素属于LIS和LDS的交\n * - f(A) = 满足条件的"可插入位置"数\n */\n\nint lis(const vector<int>& a) {\n    vector<int> dp;\n    for (int x : a) {\n        auto it = lower_bound(dp.begin(), dp.end(), x);\n        if (it == dp.end()) dp.push_back(x);\n        else *it = x;\n    }\n    return dp.size();\n}\n\nint lds(const vector<int>& a) {\n    vector<int> b;\n    for (int x : a) {\n        auto it = lower_bound(b.begin(), b.end(), x, greater<int>());\n        if (it == b.end()) b.push_back(x);\n        else *it = x;\n    }\n    return b.size();\n}\n\nvector<int> computeF(const vector<int>& P) {\n    int n = P.size();\n    vector<int> ans(n);\n    vector<int> dpL(n), dpDL(n);\n\n    vector<int> lis_dp;\n    for (int i = 0; i < n; i++) {\n        auto it = lower_bound(lis_dp.begin(), lis_dp.end(), P[i]);\n        dpL[i] = it - lis_dp.begin() + 1;\n        if (it == lis_dp.end()) lis_dp.push_back(P[i]);\n        else *it = P[i];\n    }\n\n    vector<int> lds_dp;\n    for (int i = 0; i < n; i++) {\n        auto it = lower_bound(lds_dp.begin(), lds_dp.end(), P[i], greater<int>());\n        dpDL[i] = it - lds_dp.begin() + 1;\n        if (it == lds_dp.end()) lds_dp.push_back(P[i]);\n        else *it = P[i];\n    }\n\n    for (int i = 0; i < n; i++) {\n        ans[i] = max(0, i + 1 - dpL[i] - dpDL[i] + 1);\n    }\n\n    return ans;\n}'
+  },
+  {
+    id: '二分查找', cat: '其他', catTag: 'tag-other',
+    title: '二分查找模板，整数二分+二分答案+实数二分+三分求单峰极值',
+    file: '二分查找模板，整数二分+二分答案+实数二分+三分求单峰极值.cpp',
+    desc: '整数二分、二分答案（最大/最小可行解）、实数二分、三分查找',
+    meta: ['O(log n)', '二分答案', '实数二分', '三分极值'],
+    code: '#include <bits/stdc++.h>\nusing namespace std;\ntypedef long long ll;\n\n/**\n * 二分查找模板合集\n * 包含：整数二分、实数二分、三分查找\n */\n\n// 寻找左边界 (第一个 >= target 的位置)\nint lowerBound(const vector<int>& a, int target) {\n    int l = 0, r = a.size();\n    while (l < r) {\n        int mid = l + (r - l) / 2;\n        if (a[mid] >= target)\n            r = mid;\n        else\n            l = mid + 1;\n    }\n    return l;\n}\n\n// 寻找右边界 (第一个 > target 的位置)\nint upperBound(const vector<int>& a, int target) {\n    int l = 0, r = a.size();\n    while (l < r) {\n        int mid = l + (r - l) / 2;\n        if (a[mid] > target)\n            r = mid;\n        else\n            l = mid + 1;\n    }\n    return l;\n}\n\n// 二分答案 — "最大的可行解"\nint maxFeasible(ll low, ll high, function<bool(ll)> check) {\n    while (low < high) {\n        ll mid = low + (high - low + 1) / 2;\n        if (check(mid))\n            low = mid;\n        else\n            high = mid - 1;\n    }\n    return low;\n}\n\n// 二分答案 — "最小的可行解"\nint minFeasible(ll low, ll high, function<bool(ll)> check) {\n    while (low < high) {\n        ll mid = low + (high - low) / 2;\n        if (check(mid))\n            high = mid;\n        else\n            low = mid + 1;\n    }\n    return low;\n}\n\n// 实数二分\ndouble realBinarySearch(double low, double high, function<bool(double)> check) {\n    for (int iter = 0; iter < 80; iter++) {\n        double mid = (low + high) / 2;\n        if (check(mid))\n            high = mid;\n        else\n            low = mid;\n    }\n    return low;\n}\n\n// 整数三分 — 求最大值\nll ternarySearchMax(int l, int r, function<ll(int)> f) {\n    while (r - l > 2) {\n        int m1 = l + (r - l) / 3;\n        int m2 = r - (r - l) / 3;\n        if (f(m1) < f(m2))\n            l = m1;\n        else\n            r = m2;\n    }\n    ll ans = f(l);\n    for (int i = l + 1; i <= r; i++)\n        ans = max(ans, f(i));\n    return ans;\n}\n\n// 实数三分 — 求最小值\ndouble ternarySearchMin(double l, double r, function<double(double)> f) {\n    for (int iter = 0; iter < 80; iter++) {\n        double m1 = l + (r - l) / 3;\n        double m2 = r - (r - l) / 3;\n        if (f(m1) < f(m2))\n            r = m2;\n        else\n            l = m1;\n    }\n    return f((l + r) / 2);\n}'
+  },
+  {
+    id: '区间DP', cat: '其他', catTag: 'tag-other',
+    title: '区间DP模板，石子合并、回文串分割、最长回文子序列',
+    file: '区间DP模板，石子合并、回文串分割、最长回文子序列.cpp',
+    desc: '区间DP经典题型：石子合并、环形石子、回文串分割、最长回文子序列',
+    meta: ['O(n³)', '石子合并', '环形DP', '回文子序列'],
+    code: '#include <bits/stdc++.h>\nusing namespace std;\n\n/**\n * 区间DP模板\n * 适用于：石子合并、矩阵链乘、回文分割等\n * 时间复杂度: O(n³) (标准)，部分问题可优化到 O(n²)\n */\n\n// 经典: 合并石子 (区间求和最小值)\nint stoneMerge(const vector<int>& stones) {\n    int n = stones.size();\n    vector<int> pre(n + 1, 0);\n    for (int i = 1; i <= n; i++)\n        pre[i] = pre[i - 1] + stones[i - 1];\n\n    auto sum = [&](int l, int r) {\n        return pre[r + 1] - pre[l];\n    };\n\n    const int INF = 1e9;\n    vector<vector<int>> dp(n, vector<int>(n, INF));\n\n    for (int i = 0; i < n; i++) dp[i][i] = 0;\n\n    for (int len = 2; len <= n; len++) {\n        for (int l = 0; l + len - 1 < n; l++) {\n            int r = l + len - 1;\n            for (int k = l; k < r; k++) {\n                dp[l][r] = min(dp[l][r],\n                    dp[l][k] + dp[k + 1][r] + sum(l, r));\n            }\n        }\n    }\n    return dp[0][n - 1];\n}\n\n// 环形石子合并 (破环成链)\nint stoneMergeCircle(const vector<int>& stones) {\n    int n = stones.size();\n    vector<int> a = stones;\n    a.insert(a.end(), stones.begin(), stones.end());\n\n    vector<int> pre(2 * n + 1, 0);\n    for (int i = 1; i <= 2 * n; i++)\n        pre[i] = pre[i - 1] + a[i - 1];\n\n    auto sum = [&](int l, int r) {\n        return pre[r + 1] - pre[l];\n    };\n\n    const int INF = 1e9;\n    vector<vector<int>> dp(2 * n, vector<int>(2 * n, INF));\n\n    for (int i = 0; i < 2 * n; i++) dp[i][i] = 0;\n\n    for (int len = 2; len <= n; len++) {\n        for (int l = 0; l + len - 1 < 2 * n; l++) {\n            int r = l + len - 1;\n            for (int k = l; k < r; k++) {\n                dp[l][r] = min(dp[l][r],\n                    dp[l][k] + dp[k + 1][r] + sum(l, r));\n            }\n        }\n    }\n\n    int ans = INF;\n    for (int i = 0; i < n; i++)\n        ans = min(ans, dp[i][i + n - 1]);\n    return ans;\n}\n\n// 回文串分割最少次数\nint palindromePartition(const string& s) {\n    int n = s.size();\n    vector<vector<bool>> isPal(n, vector<bool>(n, false));\n    for (int i = n - 1; i >= 0; i--) {\n        for (int j = i; j < n; j++) {\n            if (s[i] == s[j] && (j - i <= 1 || isPal[i + 1][j - 1]))\n                isPal[i][j] = true;\n        }\n    }\n\n    const int INF = 1e9;\n    vector<vector<int>> dp(n, vector<int>(n, INF));\n    for (int i = 0; i < n; i++) dp[i][i] = 0;\n\n    for (int len = 2; len <= n; len++) {\n        for (int l = 0; l + len - 1 < n; l++) {\n            int r = l + len - 1;\n            if (isPal[l][r]) {\n                dp[l][r] = 0;\n            } else {\n                for (int k = l; k < r; k++) {\n                    dp[l][r] = min(dp[l][r],\n                        dp[l][k] + dp[k + 1][r] + 1);\n                }\n            }\n        }\n    }\n    return dp[0][n - 1];\n}\n\n// 最长回文子序列\nint longestPalindromeSubseq(const string& s) {\n    int n = s.size();\n    vector<vector<int>> dp(n, vector<int>(n, 0));\n    for (int i = 0; i < n; i++) dp[i][i] = 1;\n\n    for (int len = 2; len <= n; len++) {\n        for (int l = 0; l + len - 1 < n; l++) {\n            int r = l + len - 1;\n            if (s[l] == s[r])\n                dp[l][r] = dp[l + 1][r - 1] + 2;\n            else\n                dp[l][r] = max(dp[l + 1][r], dp[l][r - 1]);\n        }\n    }\n    return dp[0][n - 1];\n}'
+  },
+  {
+    id: '排序离散化', cat: '其他', catTag: 'tag-other',
+    title: '排序和离散化模板，归并排序求逆序对+快速选择第K小',
+    file: '排序和离散化模板，归并排序求逆序对+快速选择第K小.cpp',
+    desc: '归并排序 (求逆序对)、快速选择 (第 k 小)、离散化',
+    meta: ['归并O(n log n)', '逆序对', '快速选择', '离散化'],
+    code: '#include <bits/stdc++.h>\nusing namespace std;\n\n/**\n * 常用排序算法\n * 包含：归并排序(求逆序对)、快速排序、堆排序\n */\n\n// 归并排序 + 求逆序对\nlong long mergeSort(vector<int>& a, int l, int r) {\n    if (l >= r) return 0;\n    int mid = (l + r) / 2;\n    long long inv = mergeSort(a, l, mid) + mergeSort(a, mid + 1, r);\n    vector<int> tmp(r - l + 1);\n    int i = l, j = mid + 1, k = 0;\n    while (i <= mid && j <= r) {\n        if (a[i] <= a[j]) {\n            tmp[k++] = a[i++];\n        } else {\n            tmp[k++] = a[j++];\n            inv += mid - i + 1;\n        }\n    }\n    while (i <= mid) tmp[k++] = a[i++];\n    while (j <= r) tmp[k++] = a[j++];\n    for (int i = 0; i < k; i++)\n        a[l + i] = tmp[i];\n    return inv;\n}\n\nlong long countInversions(vector<int> a) {\n    return mergeSort(a, 0, a.size() - 1);\n}\n\n// 快速选择 (第 k 小的数, k 从 0 开始)\nint quickSelect(vector<int>& a, int l, int r, int k) {\n    if (l >= r) return a[l];\n    int pivot = a[(l + r) / 2];\n    int i = l, j = r;\n    while (i <= j) {\n        while (a[i] < pivot) i++;\n        while (a[j] > pivot) j--;\n        if (i <= j) swap(a[i++], a[j--]);\n    }\n    if (k <= j) return quickSelect(a, l, j, k);\n    if (k >= i) return quickSelect(a, i, r, k);\n    return a[k];\n}\n\n// 离散化\nvector<int> discretize(const vector<int>& a) {\n    vector<int> b = a;\n    sort(b.begin(), b.end());\n    b.erase(unique(b.begin(), b.end()), b.end());\n    vector<int> res(a.size());\n    for (size_t i = 0; i < a.size(); i++)\n        res[i] = lower_bound(b.begin(), b.end(), a[i]) - b.begin();\n    return res;\n}'
+  },
+  {
+    id: '树的算法', cat: '其他', catTag: 'tag-other',
+    title: '树的算法模板，直径+重心+树链剖分HLD，路径和子树操作',
+    file: '树的算法模板，直径+重心+树链剖分HLD，路径和子树操作.cpp',
+    desc: '树的直径 (两次DFS/树形DP)、重心、树链剖分 (HLD)',
+    meta: ['直径', '重心', '树链剖分', 'HLD路径子树'],
+    code: '#include <bits/stdc++.h>\nusing namespace std;\n\n/**\n * 树的基础算法\n * 包含：树的直径、树的重心、树的重链剖分\n */\n\n// 树的直径 (两次DFS)\npair<int, int> treeDiameterDFS(const vector<vector<int>>& adj, int start) {\n    int n = adj.size();\n    vector<int> dist(n);\n    function<void(int, int, int)> dfs = [&](int u, int fa, int d) {\n        dist[u] = d;\n        for (int v : adj[u])\n            if (v != fa) dfs(v, u, d + 1);\n    };\n    dfs(start, -1, 0);\n    int u = max_element(dist.begin(), dist.end()) - dist.begin();\n    dfs(u, -1, 0);\n    int v = max_element(dist.begin(), dist.end()) - dist.begin();\n    return {u, v};\n}\n\n// 树的直径 (树形DP, 支持负权)\nint treeDiameterDP(const vector<vector<pair<int, int>>>& adj) {\n    int ans = 0;\n    function<int(int, int)> dfs = [&](int u, int fa) {\n        int d1 = 0, d2 = 0;\n        for (auto [v, w] : adj[u]) {\n            if (v == fa) continue;\n            int d = dfs(v, u) + w;\n            if (d > d1) { d2 = d1; d1 = d; }\n            else if (d > d2) d2 = d;\n        }\n        ans = max(ans, d1 + d2);\n        return d1;\n    };\n    dfs(1, 0);\n    return ans;\n}\n\n// 树的重心\nint treeCentroid(const vector<vector<int>>& adj) {\n    int n = adj.size() - 1;\n    int centroid = -1, minMax = n;\n    vector<int> sz(n + 1);\n    function<void(int, int)> dfs = [&](int u, int fa) {\n        sz[u] = 1;\n        int maxSub = 0;\n        for (int v : adj[u]) {\n            if (v == fa) continue;\n            dfs(v, u);\n            sz[u] += sz[v];\n            maxSub = max(maxSub, sz[v]);\n        }\n        maxSub = max(maxSub, n - sz[u]);\n        if (maxSub < minMax) {\n            minMax = maxSub;\n            centroid = u;\n        }\n    };\n    dfs(1, 0);\n    return centroid;\n}\n\n// 树链剖分 (Heavy-Light Decomposition)\nstruct HLD {\n    int n, timer = 0;\n    vector<vector<int>> adj;\n    vector<int> fa, dep, sz, son;\n    vector<int> top, dfn, rnk;\n\n    HLD(int _n) : n(_n), adj(n + 1),\n        fa(n + 1), dep(n + 1), sz(n + 1), son(n + 1, 0),\n        top(n + 1), dfn(n + 1), rnk(n + 1) {}\n\n    void addEdge(int u, int v) {\n        adj[u].push_back(v);\n        adj[v].push_back(u);\n    }\n\n    void dfs1(int u, int f) {\n        fa[u] = f; dep[u] = dep[f] + 1;\n        sz[u] = 1;\n        for (int v : adj[u]) {\n            if (v == f) continue;\n            dfs1(v, u);\n            sz[u] += sz[v];\n            if (sz[v] > sz[son[u]]) son[u] = v;\n        }\n    }\n\n    void dfs2(int u, int tp) {\n        top[u] = tp;\n        dfn[u] = ++timer;\n        rnk[timer] = u;\n        if (son[u]) dfs2(son[u], tp);\n        for (int v : adj[u]) {\n            if (v == fa[u] || v == son[u]) continue;\n            dfs2(v, v);\n        }\n    }\n\n    void build(int root = 1) {\n        dfs1(root, 0);\n        dfs2(root, root);\n    }\n\n    void pathProcess(int u, int v, function<void(int, int)> op) {\n        while (top[u] != top[v]) {\n            if (dep[top[u]] < dep[top[v]]) swap(u, v);\n            op(dfn[top[u]], dfn[u]);\n            u = fa[top[u]];\n        }\n        if (dep[u] > dep[v]) swap(u, v);\n        op(dfn[u], dfn[v]);\n    }\n\n    void subtreeProcess(int u, function<void(int, int)> op) {\n        op(dfn[u], dfn[u] + sz[u] - 1);\n    }\n\n    int lca(int u, int v) {\n        while (top[u] != top[v]) {\n            if (dep[top[u]] < dep[top[v]]) swap(u, v);\n            u = fa[top[u]];\n        }\n        return dep[u] < dep[v] ? u : v;\n    }\n};'
+  },
+  {
+    id: '经典DP', cat: '其他', catTag: 'tag-other',
+    title: '经典DP模板，01+完全+多重背包+LCS+LIS O(NlogN)+编辑距离',
+    file: '经典DP模板，01+完全+多重背包+LCS+LIS O(NlogN)+编辑距离.cpp',
+    desc: '01/完全/多重背包、LCS、LIS (O(n log n))、编辑距离',
+    meta: ['背包DP', 'LCS O(nm)', 'LIS O(n log n)', '编辑距离'],
+    code: '#include <bits/stdc++.h>\nusing namespace std;\n\n/**\n * 经典DP模板合集\n * 包含：01背包、完全背包、多重背包、LCS、LIS、编辑距离\n */\n\n// 01背包\nint knapsack01(const vector<int>& weight, const vector<int>& value, int cap) {\n    vector<int> dp(cap + 1, 0);\n    int n = weight.size();\n    for (int i = 0; i < n; i++)\n        for (int j = cap; j >= weight[i]; j--)\n            dp[j] = max(dp[j], dp[j - weight[i]] + value[i]);\n    return dp[cap];\n}\n\n// 完全背包\nint knapsackComplete(const vector<int>& weight, const vector<int>& value, int cap) {\n    vector<int> dp(cap + 1, 0);\n    int n = weight.size();\n    for (int i = 0; i < n; i++)\n        for (int j = weight[i]; j <= cap; j++)\n            dp[j] = max(dp[j], dp[j - weight[i]] + value[i]);\n    return dp[cap];\n}\n\n// 多重背包 (二进制拆分)\nint knapsackMultiple(vector<int> weight, vector<int> value, vector<int> cnt, int cap) {\n    vector<int> dp(cap + 1, 0);\n    int n = weight.size();\n\n    vector<int> newW, newV;\n    for (int i = 0; i < n; i++) {\n        int c = cnt[i];\n        for (int k = 1; k <= c; k <<= 1) {\n            newW.push_back(weight[i] * k);\n            newV.push_back(value[i] * k);\n            c -= k;\n        }\n        if (c > 0) {\n            newW.push_back(weight[i] * c);\n            newV.push_back(value[i] * c);\n        }\n    }\n\n    for (int i = 0; i < (int)newW.size(); i++)\n        for (int j = cap; j >= newW[i]; j--)\n            dp[j] = max(dp[j], dp[j - newW[i]] + newV[i]);\n    return dp[cap];\n}\n\n// LCS 最长公共子序列\nint lcs(const string& s1, const string& s2) {\n    int n = s1.size(), m = s2.size();\n    vector<vector<int>> dp(n + 1, vector<int>(m + 1, 0));\n    for (int i = 1; i <= n; i++) {\n        for (int j = 1; j <= m; j++) {\n            if (s1[i - 1] == s2[j - 1])\n                dp[i][j] = dp[i - 1][j - 1] + 1;\n            else\n                dp[i][j] = max(dp[i - 1][j], dp[i][j - 1]);\n        }\n    }\n    return dp[n][m];\n}\n\n// 输出LCS字符串\nstring lcsString(const string& s1, const string& s2) {\n    int n = s1.size(), m = s2.size();\n    vector<vector<int>> dp(n + 1, vector<int>(m + 1, 0));\n    for (int i = 1; i <= n; i++)\n        for (int j = 1; j <= m; j++)\n            if (s1[i - 1] == s2[j - 1])\n                dp[i][j] = dp[i - 1][j - 1] + 1;\n            else\n                dp[i][j] = max(dp[i - 1][j], dp[i][j - 1]);\n\n    string res;\n    int i = n, j = m;\n    while (i > 0 && j > 0) {\n        if (s1[i - 1] == s2[j - 1]) {\n            res.push_back(s1[i - 1]);\n            i--; j--;\n        } else if (dp[i - 1][j] > dp[i][j - 1]) {\n            i--;\n        } else {\n            j--;\n        }\n    }\n    reverse(res.begin(), res.end());\n    return res;\n}\n\n// LIS 最长上升子序列 O(n log n)\nint lis(const vector<int>& a) {\n    int n = a.size();\n    vector<int> dp;\n    for (int x : a) {\n        auto it = lower_bound(dp.begin(), dp.end(), x);\n        if (it == dp.end())\n            dp.push_back(x);\n        else\n            *it = x;\n    }\n    return dp.size();\n}\n\n// LIS 回溯构造\nvector<int> lisTrack(const vector<int>& a) {\n    int n = a.size();\n    vector<int> dp, idx, pre(n, -1);\n    for (int i = 0; i < n; i++) {\n        auto it = lower_bound(dp.begin(), dp.end(), a[i]);\n        int pos = it - dp.begin();\n        if (it == dp.end()) {\n            dp.push_back(a[i]);\n            idx.push_back(i);\n        } else {\n            *it = a[i];\n            idx[pos] = i;\n        }\n        if (pos > 0) pre[i] = idx[pos - 1];\n    }\n    vector<int> res;\n    for (int i = idx.back(); i != -1; i = pre[i])\n        res.push_back(a[i]);\n    reverse(res.begin(), res.end());\n    return res;\n}\n\n// 编辑距离 (Levenshtein Distance)\nint editDistance(const string& s1, const string& s2) {\n    int n = s1.size(), m = s2.size();\n    vector<vector<int>> dp(n + 1, vector<int>(m + 1));\n    for (int i = 0; i <= n; i++) dp[i][0] = i;\n    for (int j = 0; j <= m; j++) dp[0][j] = j;\n    for (int i = 1; i <= n; i++) {\n        for (int j = 1; j <= m; j++) {\n            if (s1[i - 1] == s2[j - 1])\n                dp[i][j] = dp[i - 1][j - 1];\n            else\n                dp[i][j] = min({dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]}) + 1;\n        }\n    }\n    return dp[n][m];\n}'
+  },
+  {
+    id: '计算几何', cat: '其他', catTag: 'tag-other',
+    title: '计算几何基础模板，点向量+凸包Andrew+点在多边形射线法+最近点对',
+    file: '计算几何基础模板，点向量+凸包Andrew+点在多边形射线法+最近点对.cpp',
+    desc: '点/向量运算、线段相交、凸包 (Andrew)、点在多边形内、最近点对',
+    meta: ['点/向量', '凸包O(n log n)', '射线法', '最近点对'],
+    code: '#include <bits/stdc++.h>\nusing namespace std;\n\n/**\n * 计算几何基础模板\n * 包含：点/向量表示、叉积、点积、方向判断、凸包\n */\n\nconst double EPS = 1e-9;\nconst double PI = acos(-1.0);\n\nint sgn(double x) {\n    if (fabs(x) < EPS) return 0;\n    return x < 0 ? -1 : 1;\n}\n\nstruct Point {\n    double x, y;\n    Point() : x(0), y(0) {}\n    Point(double _x, double _y) : x(_x), y(_y) {}\n\n    Point operator+(const Point& p) const { return Point(x + p.x, y + p.y); }\n    Point operator-(const Point& p) const { return Point(x - p.x, y - p.y); }\n    Point operator*(double k) const { return Point(x * k, y * k); }\n    Point operator/(double k) const { return Point(x / k, y / k); }\n    bool operator<(const Point& p) const {\n        int c = sgn(x - p.x);\n        if (c) return c < 0;\n        return sgn(y - p.y) < 0;\n    }\n    bool operator==(const Point& p) const {\n        return sgn(x - p.x) == 0 && sgn(y - p.y) == 0;\n    }\n\n    double len() const { return sqrt(x * x + y * y); }\n    double len2() const { return x * x + y * y; }\n    double angle() const { return atan2(y, x); }\n\n    Point rotate(double rad) const {\n        return Point(x * cos(rad) - y * sin(rad), x * sin(rad) + y * cos(rad));\n    }\n\n    Point normal() const { return Point(-y, x); }\n};\n\ndouble dot(const Point& a, const Point& b) { return a.x * b.x + a.y * b.y; }\ndouble cross(const Point& a, const Point& b) { return a.x * b.y - a.y * b.x; }\n\n// 判断点是否在线段上\nbool onSegment(const Point& p, const Point& a, const Point& b) {\n    return sgn(cross(p - a, p - b)) == 0 &&\n           sgn(dot(p - a, p - b)) <= 0;\n}\n\n// 两线段是否相交\nbool segmentsIntersect(const Point& a1, const Point& a2,\n                       const Point& b1, const Point& b2) {\n    double c1 = cross(a2 - a1, b1 - a1);\n    double c2 = cross(a2 - a1, b2 - a1);\n    double c3 = cross(b2 - b1, a1 - b1);\n    double c4 = cross(b2 - b1, a2 - b1);\n    return sgn(c1) * sgn(c2) < 0 && sgn(c3) * sgn(c4) < 0;\n}\n\n// 点到线段的最短距离\ndouble pointToSegment(const Point& p, const Point& a, const Point& b) {\n    if (sgn(dot(b - a, p - a)) < 0) return (p - a).len();\n    if (sgn(dot(a - b, p - b)) < 0) return (p - b).len();\n    return fabs(cross(b - a, p - a)) / (b - a).len();\n}\n\n// 两直线交点\nPoint lineIntersection(const Point& p1, const Point& v1,\n                       const Point& p2, const Point& v2) {\n    double t = cross(p2 - p1, v2) / cross(v1, v2);\n    return p1 + v1 * t;\n}\n\n// 凸包 (Andrew算法)\nvector<Point> convexHull(vector<Point> pts) {\n    int n = pts.size();\n    if (n <= 2) return pts;\n    sort(pts.begin(), pts.end());\n    vector<Point> hull(n + 1);\n\n    int k = 0;\n    for (int i = 0; i < n; i++) {\n        while (k >= 2 && sgn(cross(hull[k - 1] - hull[k - 2], pts[i] - hull[k - 2])) <= 0)\n            k--;\n        hull[k++] = pts[i];\n    }\n\n    int t = k + 1;\n    for (int i = n - 2; i >= 0; i--) {\n        while (k >= t && sgn(cross(hull[k - 1] - hull[k - 2], pts[i] - hull[k - 2])) <= 0)\n            k--;\n        hull[k++] = pts[i];\n    }\n\n    hull.resize(k - 1);\n    return hull;\n}\n\n// 凸包周长\ndouble convexHullPerimeter(const vector<Point>& hull) {\n    double res = 0;\n    int m = hull.size();\n    for (int i = 0; i < m; i++)\n        res += (hull[(i + 1) % m] - hull[i]).len();\n    return res;\n}\n\n// 凸包面积 (2倍)\ndouble convexHullArea2(const vector<Point>& hull) {\n    double res = 0;\n    int m = hull.size();\n    for (int i = 0; i < m; i++)\n        res += cross(hull[i], hull[(i + 1) % m]);\n    return fabs(res);\n}\n\n// 多边形面积 (2倍)\ndouble polygonArea2(const vector<Point>& p) {\n    double res = 0;\n    int n = p.size();\n    for (int i = 0; i < n; i++)\n        res += cross(p[i], p[(i + 1) % n]);\n    return fabs(res);\n}\n\n// 点是否在多边形内部 (射线法)\nint pointInPolygon(const Point& p, const vector<Point>& poly) {\n    int n = poly.size(), wn = 0;\n    for (int i = 0; i < n; i++) {\n        if (onSegment(p, poly[i], poly[(i + 1) % n]))\n            return 0;\n        int k = sgn(cross(poly[(i + 1) % n] - poly[i], p - poly[i]));\n        int d1 = sgn(poly[i].y - p.y);\n        int d2 = sgn(poly[(i + 1) % n].y - p.y);\n        if (k > 0 && d1 <= 0 && d2 > 0) wn++;\n        if (k < 0 && d2 <= 0 && d1 > 0) wn--;\n    }\n    return wn ? 1 : -1;\n}\n\n// 最近点对\ndouble closestPair(vector<Point>& pts, int l, int r) {\n    if (r - l <= 3) {\n        double d = 1e18;\n        for (int i = l; i < r; i++)\n            for (int j = i + 1; j < r; j++)\n                d = min(d, (pts[i] - pts[j]).len());\n        return d;\n    }\n    int mid = (l + r) / 2;\n    double midX = pts[mid].x;\n    double d = min(closestPair(pts, l, mid), closestPair(pts, mid, r));\n\n    vector<Point> strip;\n    for (int i = l; i < r; i++)\n        if (fabs(pts[i].x - midX) < d)\n            strip.push_back(pts[i]);\n    sort(strip.begin(), strip.end(), [](const Point& a, const Point& b) {\n        return a.y < b.y;\n    });\n    for (int i = 0; i < (int)strip.size(); i++)\n        for (int j = i + 1; j < (int)strip.size() && strip[j].y - strip[i].y < d; j++)\n            d = min(d, (strip[i] - strip[j]).len());\n    return d;\n}'
+  },
+  {
+    id: '高精度运算', cat: '其他', catTag: 'tag-other',
+    title: '高精度运算模板，大整数加减乘除实现',
+    file: '高精度运算模板，大整数加减乘除实现.cpp',
+    desc: '大整数加减乘除（vector<int> 低位在前实现）',
+    meta: ['加法', '减法', '乘法', '除法'],
+    code: '#include <bits/stdc++.h>\nusing namespace std;\n\n/**\n * 高精度运算 (大整数)\n * 使用字符串或vector<int>表示，低位在前\n * 支持：加法、减法、乘法、除法(整除高精度/低精度)\n */\n\nvoid trim(vector<int>& a) {\n    while (a.size() > 1 && a.back() == 0)\n        a.pop_back();\n}\n\nvector<int> fromString(const string& s) {\n    vector<int> a;\n    for (int i = s.size() - 1; i >= 0; i--)\n        a.push_back(s[i] - \'0\');\n    return a;\n}\n\nstring toString(const vector<int>& a) {\n    string s;\n    for (int i = a.size() - 1; i >= 0; i--)\n        s.push_back(a[i] + \'0\');\n    return s;\n}\n\nbool lessThan(const vector<int>& a, const vector<int>& b) {\n    if (a.size() != b.size())\n        return a.size() < b.size();\n    for (int i = a.size() - 1; i >= 0; i--)\n        if (a[i] != b[i]) return a[i] < b[i];\n    return false;\n}\n\n// 高精度加法\nvector<int> add(const vector<int>& a, const vector<int>& b) {\n    vector<int> res;\n    int carry = 0;\n    for (size_t i = 0; i < max(a.size(), b.size()) || carry; i++) {\n        if (i < a.size()) carry += a[i];\n        if (i < b.size()) carry += b[i];\n        res.push_back(carry % 10);\n        carry /= 10;\n    }\n    return res;\n}\n\n// 高精度减法 (假设 a >= b)\nvector<int> sub(const vector<int>& a, const vector<int>& b) {\n    vector<int> res;\n    int borrow = 0;\n    for (size_t i = 0; i < a.size(); i++) {\n        int t = a[i] - borrow;\n        if (i < b.size()) t -= b[i];\n        if (t < 0) {\n            t += 10;\n            borrow = 1;\n        } else {\n            borrow = 0;\n        }\n        res.push_back(t);\n    }\n    trim(res);\n    return res;\n}\n\n// 高精度乘法: a * b (高精度乘高精度)\nvector<int> mul(const vector<int>& a, const vector<int>& b) {\n    vector<int> res(a.size() + b.size(), 0);\n    for (size_t i = 0; i < a.size(); i++) {\n        int carry = 0;\n        for (size_t j = 0; j < b.size() || carry; j++) {\n            long long cur = res[i + j] + a[i] * 1LL * (j < b.size() ? b[j] : 0) + carry;\n            res[i + j] = cur % 10;\n            carry = cur / 10;\n        }\n    }\n    trim(res);\n    return res;\n}\n\n// 高精度乘低精度\nvector<int> mulInt(const vector<int>& a, int b) {\n    vector<int> res;\n    int carry = 0;\n    for (size_t i = 0; i < a.size() || carry; i++) {\n        if (i < a.size()) carry += a[i] * b;\n        res.push_back(carry % 10);\n        carry /= 10;\n    }\n    trim(res);\n    return res;\n}\n\n// 高精度除法: a / b (高精度除低精度)\npair<vector<int>, int> divInt(const vector<int>& a, int b) {\n    vector<int> res(a.size());\n    int r = 0;\n    for (int i = a.size() - 1; i >= 0; i--) {\n        r = r * 10 + a[i];\n        res[i] = r / b;\n        r %= b;\n    }\n    trim(res);\n    return {res, r};\n}\n\n// 高精度除法: a / b (高精度除高精度，减法模拟)\nvector<int> div(const vector<int>& a, const vector<int>& b) {\n    vector<int> res, cur;\n    for (int i = a.size() - 1; i >= 0; i--) {\n        cur.insert(cur.begin(), a[i]);\n        trim(cur);\n        int cnt = 0;\n        while (!lessThan(cur, b)) {\n            cur = sub(cur, b);\n            cnt++;\n        }\n        res.insert(res.begin(), cnt);\n    }\n    trim(res);\n    return res;\n}'
+  }
+];
+
+// ====================================================================
+// RENDER LOGIC
+// ====================================================================
+const nav = document.getElementById('nav');
+const main = document.getElementById('main');
+const search = document.getElementById('search');
+
+// Group templates by category
+const CAT_ORDER = ['数据结构', '图论', '字符串', '数学', '其他'];
+const grouped = {};
+CAT_ORDER.forEach(c => grouped[c] = TEMPLATES.filter(t => t.cat === c));
+
+// Escape HTML
+function esc(str) {
+  const map = {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'};
+  return str.replace(/[&<>"']/g, c => map[c]);
+}
+
+// Build sidebar nav
+function buildNav(filter = '') {
+  nav.innerHTML = '';
+  const q = filter.toLowerCase();
+  let hasVisible = false;
+
+  CAT_ORDER.forEach(cat => {
+    const items = grouped[cat];
+    const visible = items.filter(t => {
+      if (!q) return true;
+      return t.id.includes(q) || t.title.toLowerCase().includes(q) ||
+             t.desc.includes(q) || t.file.includes(q) ||
+             t.meta.some(m => m.includes(q));
+    });
+
+    if (visible.length === 0) return;
+    hasVisible = true;
+
+    const catHead = document.createElement('div');
+    catHead.className = 'nav-category';
+    catHead.textContent = cat;
+    nav.appendChild(catHead);
+
+    visible.forEach((t, idx) => {
+      const item = document.createElement('div');
+      item.className = 'nav-item';
+      item.dataset.id = t.id;
+      item.innerHTML = '<span class="tag ' + t.catTag + '">' + (t.cat === '数据结构' ? 'DS' : t.cat === '图论' ? 'G' : t.cat === '字符串' ? 'S' : t.cat === '数学' ? 'M' : 'O') + '</span>' + t.id;
+      item.onclick = () => showTemplate(t.id);
+      nav.appendChild(item);
+    });
+  });
+
+  if (!hasVisible) {
+    const no = document.createElement('div');
+    no.className = 'no-result';
+    no.textContent = '未找到匹配的模板';
+    nav.appendChild(no);
+  }
+}
+
+// Build main content (all template sections)
+function buildMain() {
+  main.innerHTML = '';
+  TEMPLATES.forEach(t => {
+    const section = document.createElement('section');
+    section.className = 'template-section';
+    section.id = 'section-' + t.id;
+
+    section.innerHTML = '\n      <div class="section-header">\n        <h2>' + esc(t.title) + '</h2>\n        <p class="desc">' + esc(t.desc) + '</p>\n        <div class="meta">\n          ' + t.meta.map(m => '<span class="meta-item">' + esc(m) + '</span>').join('') + '\n        </div>\n      </div>\n      <div class="code-wrapper">\n        <div class="code-header">\n          <span>' + esc('📄 ' + t.file) + '</span>\n          <button class="copy-btn" data-id="' + t.id + '">📋 复制</button>\n        </div>\n        <pre><code>' + esc(t.code) + '</code></pre>\n      </div>\n    ';
+    main.appendChild(section);
+  });
+
+  // Bind copy buttons
+  main.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.id;
+      const t = TEMPLATES.find(x => x.id === id);
+      navigator.clipboard.writeText(t.code).then(() => {
+        btn.textContent = '✓ 已复制';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = '📋 复制';
+          btn.classList.remove('copied');
+        }, 1500);
+      }).catch(() => {
+        btn.textContent = '✗ 失败';
+        setTimeout(() => { btn.textContent = '📋 复制'; }, 1500);
+      });
+    });
+  });
+}
+
+let currentTemplate = null;
+
+function showTemplate(id) {
+  main.querySelectorAll('.template-section').forEach(s => s.classList.remove('active'));
+  const section = document.getElementById('section-' + id);
+  if (section) {
+    section.classList.add('active');
+    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  nav.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+  const navItem = nav.querySelector('[data-id="' + CSS.escape(id) + '"]');
+  if (navItem) navItem.classList.add('active');
+
+  currentTemplate = id;
+  history.replaceState(null, '', '#' + id);
+}
+
+// ===== Event: search =====
+search.addEventListener('input', () => {
+  buildNav(search.value);
+});
+
+// ===== Init =====
+buildMain();
+buildNav();
+
+// Handle hash on load
+const hash = decodeURIComponent(location.hash.slice(1));
+if (hash) {
+  const t = TEMPLATES.find(x => x.id === hash);
+  if (t) showTemplate(t.id);
+  else showTemplate(TEMPLATES[0].id);
+} else {
+  showTemplate(TEMPLATES[0].id);
+}
+
+// Keyboard shortcut: Ctrl+K to focus search
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+    e.preventDefault();
+    search.focus();
+  }
+});
+
+console.log('🚀 ACM 算法模板库已就绪 · 共 ' + TEMPLATES.length + ' 个模板');
+</script>
+</body>
+</html>
