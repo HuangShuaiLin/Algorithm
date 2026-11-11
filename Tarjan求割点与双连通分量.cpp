@@ -78,10 +78,11 @@ int main(){
     head.assign(n * 2 + 1,-1);
     dfn.assign(n * 2 + 1,0);
     belong = low = dfn;
-    fl.assign(n + 1,0);
+    fl.assign(n * 2 + 1,0);
     for(int i = 1;i <= m;i ++){
         int u,v;
         cin>>u>>v;
+        if(u == v) continue;
         add(u,v);
     }
     // for(int i = 1;i <= n;i ++)
@@ -101,6 +102,7 @@ int main(){
     for(int i = 1;i <= n;i ++){
         if(!dfn[i] && head[i] != -1){
             Tarjan(i,st,true);
+            while(!st.empty()) st.pop();
         }else if(!dfn[i]){
             mp[++cnt].push_back(i);
         }
